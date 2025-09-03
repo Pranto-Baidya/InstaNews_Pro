@@ -5,7 +5,7 @@ class AppColors{
   //optional color : 0D9488
   static const Color mainColor = Color(0xFF2563EB); //app's main color for both light and dark theme
 
-  static const Color lightBackground = Color(0xFFF5F7FA); // Off-White
+  static const Color lightBackground = Color(0xFFFFFFFF); // Off-White
   static const Color lightSurface = Color(0xFFFFFFFF); // Pure White
   static const Color lightTextPrimary = Color(0xFF333333); // Dark Gray
   static const Color lightTextSecondary = Color(0xFF666666); // Medium Gray

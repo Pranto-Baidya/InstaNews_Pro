@@ -35,7 +35,7 @@ class BuildPage extends StatelessWidget {
                 ],
               )
               :Text(title, style: theme.textTheme.headlineMedium),
-          SizedBox(height: 20.h,),
+          SizedBox(height: 35.h,),
           Image.asset(image,width: 280.w,height: 280.h,),
           SizedBox(height: 20.h,),
           Text(subTitle,style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500),)

@@ -82,6 +82,8 @@ ThemeData lightTheme = ThemeData(
   navigationBarTheme: NavigationBarThemeData(
     backgroundColor: AppColors.lightSurface,
     indicatorColor: AppColors.mainColor,
+    surfaceTintColor: Colors.transparent,
+    elevation: 1
   ),
   searchBarTheme: SearchBarThemeData(
     backgroundColor: WidgetStatePropertyAll(AppColors.lightSurface),
@@ -91,10 +93,11 @@ ThemeData lightTheme = ThemeData(
     filled: true,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(15.r),
+      borderSide: BorderSide.none
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(15.r),
-      borderSide: BorderSide(width: 2.w, color: AppColors.mainColor),
+        borderSide: BorderSide.none
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(15.r),
@@ -102,7 +105,7 @@ ThemeData lightTheme = ThemeData(
     ),
     errorBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(15.r),
-      borderSide: BorderSide(width: 2.w, color: AppColors.lightError),
+        borderSide: BorderSide.none
     ),
   ),
   drawerTheme: DrawerThemeData(
@@ -148,7 +151,7 @@ ThemeData darkTheme = ThemeData(
     titleLarge: GoogleFonts.lato(
         color: AppColors.darkTextPrimary, fontSize: 22, fontWeight: FontWeight.w700),
     displaySmall: GoogleFonts.lato(
-        color: AppColors.darkTextPrimary, fontSize: 36, fontWeight: FontWeight.w500),
+        color: AppColors.darkTextPrimary, fontSize: 36, fontWeight: FontWeight.w700),
     displayMedium: GoogleFonts.lato(
         color: AppColors.darkTextPrimary, fontSize: 45, fontWeight: FontWeight.w700),
     displayLarge: GoogleFonts.lato(
@@ -166,9 +169,6 @@ ThemeData darkTheme = ThemeData(
     bodyLarge: GoogleFonts.lato(
         color: AppColors.darkTextPrimary, fontSize: 16, fontWeight: FontWeight.w700),
   ),
-
-
-
   drawerTheme: DrawerThemeData(
     backgroundColor: AppColors.darkBackground,
   ),
@@ -203,6 +203,8 @@ ThemeData darkTheme = ThemeData(
   navigationBarTheme: NavigationBarThemeData(
     backgroundColor: AppColors.darkSurface,
     indicatorColor: AppColors.mainColor,
+    surfaceTintColor: Colors.transparent,
+    elevation: 1
   ),
   searchBarTheme: SearchBarThemeData(
     backgroundColor: WidgetStatePropertyAll(AppColors.darkSurface),
@@ -211,19 +213,20 @@ ThemeData darkTheme = ThemeData(
     fillColor: AppColors.darkSurface,
     filled: true,
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(15.r),
+        borderRadius: BorderRadius.circular(15.r),
+        borderSide: BorderSide.none
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(15.r),
-      borderSide: BorderSide(width: 2.w, color: AppColors.mainColor),
+        borderRadius: BorderRadius.circular(15.r),
+        borderSide: BorderSide.none
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(15.r),
       borderSide: BorderSide.none,
     ),
     errorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(15.r),
-      borderSide: BorderSide(width: 2.w, color: AppColors.darkError),
+        borderRadius: BorderRadius.circular(15.r),
+        borderSide: BorderSide.none
     ),
   ),
   dropdownMenuTheme: DropdownMenuThemeData(

@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:instanews_pro/riverpod/theme_riverpod/theme_riverpod.dart';
 import 'package:instanews_pro/screens/all_news/all_news.dart';
 import 'package:instanews_pro/utils/app_colors.dart';
 import 'package:instanews_pro/widgets/app_button/app_button.dart';
 import 'package:instanews_pro/widgets/app_title/app_title.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-import '../../widgets/onboarding_page/onboarding_page.dart';
+import '../../widgets/onboarding_page/onboarding_page_widget.dart';
 
 final isLastPageProvider = StateProvider<bool>((ref) => false);
 final currentIndexProvider = StateProvider<int>((ref)=>0);
@@ -39,6 +40,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
 
+    final isDark = ref.watch(themeNotifierProvider) == ThemeMode.dark;
+
     bool lastPage = ref.watch(isLastPageProvider);
     int currentIndex = ref.watch(currentIndexProvider);
 
@@ -46,8 +49,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        systemOverlayStyle: const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
+        systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: isDark? Brightness.light:Brightness.dark,
+            systemNavigationBarColor: isDark ? Color(0xFF121212) : Color(0xFFFFFFFF)
         ),
         actions: [
           if (!lastPage)
@@ -147,10 +152,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     curve: Curves.decelerate,
                   );
                 },
-                child: CircleAvatar(
-                  backgroundColor: theme.colorScheme.primary,
-                  radius: 25,
-                  child: Icon(Icons.arrow_back, color: Colors.white,size: 30,),
+                child: Center(
+                  child: CircleAvatar(
+                    backgroundColor: theme.colorScheme.primary,
+                    radius: 25,
+                    child: Icon(Icons.arrow_back, color: Colors.white,size: 30,),
+                  ),
                 ),
               ),
               Spacer(),

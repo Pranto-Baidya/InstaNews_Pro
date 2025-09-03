@@ -1,13 +1,9 @@
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import '../../screens/home/home.dart';
-import '../../utils/app_colors.dart';
 
 class CarouselWidget extends StatelessWidget {
   final ThemeData theme;
@@ -16,9 +12,6 @@ class CarouselWidget extends StatelessWidget {
   final String chipTitle;
   final String imageUrl;
   final VoidCallback onPressed;
-  final VoidCallback onBookmarkTap;
-  final VoidCallback onReadLaterTap;
-  final VoidCallback onShareTap;
   final Color iconColor;
   final bool? isBookmarked;
 
@@ -30,114 +23,125 @@ class CarouselWidget extends StatelessWidget {
     required this.chipTitle,
     required this.imageUrl,
     required this.onPressed,
-    required this.onBookmarkTap,
-    required this.onReadLaterTap,
-    required this.onShareTap,
     required this.iconColor,
     this.isBookmarked,
   });
 
-
   @override
   Widget build(BuildContext context) {
     return CarouselSlider.builder(
-        itemCount: 5,
-        itemBuilder: (context,index,_){
-          return Container(
-            width: 250.w,
-            height: 200.h,
-            decoration: BoxDecoration(
-                color: theme.appBarTheme.backgroundColor,
-                borderRadius: BorderRadius.circular(15.r)
-            ),
-            child: Stack(
-              children: [
-                Stack(
+      itemCount: 5,
+      itemBuilder: (context, index, _) {
+        return Hero(
+          tag: 'news_details_$index',
+          flightShuttleBuilder: (flightContext, animation, flightDirection,
+              fromHeroContext, toHeroContext) {
+            return Material(
+              color: Colors.transparent,
+              child: toHeroContext.widget,
+            );
+          },
+          child: GestureDetector(
+            onTap: onPressed,
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 8.w),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16.r),
+                child: Stack(
+                  fit: StackFit.expand,
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.only(topRight: Radius.circular(15.r),topLeft: Radius.circular(15.r)),
-                      child: CachedNetworkImage(
-                        imageUrl: imageUrl,
-                        width: 250.w,
-                        height: 130.h,
-                        fit: BoxFit.cover,
-                      ),
+                    CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.cover,
                     ),
-                    Positioned(
-                        bottom: 80.h,
-                        left: 200.w,
-                        right: 10,
-                        child: GestureDetector(
-                          onTap: onBookmarkTap,
-                          child: CircleAvatar(
-                            radius: 22,
-                            backgroundColor: Colors.white,
-                            child: Center(child: isBookmarked??false?
-                            Icon(Icons.bookmark,color: theme.colorScheme.primary,) :Icon(Icons.bookmark_border,color: AppColors.lightTextPrimary,)),
-                          ),
-                        )
-                    )
-                  ],
-                ),
-                SizedBox(height: 10.h,),
-                Positioned(
-                  right: 10.w,
-                  left: 10.w,
-                  bottom: 20.h,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title,style: theme.textTheme.titleMedium,maxLines: 2),
-                      TextButton(
-                        style: TextButton.styleFrom(padding: EdgeInsets.zero,),
-                        onPressed: onPressed,
-                        child: Text(
-                          'Read more...',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: theme.colorScheme.primary,
-                          ),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Colors.black.withOpacity(0.65),
+                            Colors.transparent,
+                          ],
                         ),
                       ),
+                    ),
 
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
+                    Padding(
+                      padding: EdgeInsets.all(12.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Chip(
+                          Container(
                             padding: EdgeInsets.all(10),
-                            side: BorderSide.none,
-                            backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                            label: Text(chipTitle,style: theme.textTheme.titleSmall?.copyWith(color: theme.colorScheme.primary),),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary,
+                              borderRadius: BorderRadius.circular(7.r),
+                            ),
+                            child: Text(
+                              chipTitle,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
-                          Spacer(),
-                          IconButton(
-                              onPressed: onReadLaterTap,
-                              icon: Icon(Icons.watch_later_outlined,color: iconColor)
+
+                          const Spacer(),
+
+                          Text(
+                            title,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          IconButton(
-                              onPressed: onShareTap,
-                              icon: Icon(Icons.share_outlined,color: iconColor)
-                          ),
+                          SizedBox(height: 10.h),
+
                         ],
-                      )
-                    ],
-                  ),
-                )
-              ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          );
+          ),
+        );
+      },
+      options: CarouselOptions(
+        clipBehavior: Clip.none,
+        viewportFraction: 0.9,
+        scrollPhysics: const BouncingScrollPhysics(),
+        autoPlay: true,
+        height: 200.h, // adjust to your design
+        enlargeCenterPage: true,
+        enlargeStrategy: CenterPageEnlargeStrategy.height,
+        onPageChanged: (index, _) {
+          ref.read(indexProvider.notifier).state = index;
         },
-        options: CarouselOptions(
-            viewportFraction: 0.8,
-            scrollPhysics: BouncingScrollPhysics(),
-            autoPlay: true,
-            height: 300.h,
-            enlargeCenterPage: true,
-            enlargeStrategy: CenterPageEnlargeStrategy.height,
-            onPageChanged: (index,_){
-              ref.read(indexProvider.notifier).state = index;
-            }
-        )
+      ),
     );
   }
 }
