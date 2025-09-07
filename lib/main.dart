@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:instanews_pro/riverpod/theme_riverpod/theme_riverpod.dart';
@@ -10,7 +11,8 @@ import 'package:instanews_pro/screens/splash_screen/splash_screen.dart';
 import 'package:instanews_pro/theme_data.dart';
 import 'package:toastification/toastification.dart';
 
-main(){
+main()async{
+  await dotenv.load(fileName: 'api_keys/api_keys.env');
   runApp(
       ProviderScope(
         child : const MyApp()

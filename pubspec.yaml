@@ -54,6 +54,8 @@ dependencies:
   flutter_screenutil: ^5.9.3
   shimmer: ^3.0.0
   cached_network_image: ^3.4.1
+  timeago: ^3.7.1
+  flutter_dotenv: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -89,6 +91,7 @@ flutter:
     - assets/news_third.png
     - assets/news_fourth.png
     - assets/news_fifth.png
+    - api_keys/api_keys.env
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

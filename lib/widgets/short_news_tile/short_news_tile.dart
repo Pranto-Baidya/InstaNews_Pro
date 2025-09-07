@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:instanews_pro/news_models/article_model/article_model.dart';
 import 'package:instanews_pro/widgets/animated_container_widget/animatedContainerWidget.dart';
 
 class ShortNewsTile extends StatelessWidget {
@@ -9,19 +10,19 @@ class ShortNewsTile extends StatelessWidget {
   final ThemeData theme;
   final String title;
   final String chipTitle;
-  final String imageUrl;
+  final String? imageUrl;
   final VoidCallback onPressed;
-  final Color iconColor;
+  final ArticleModel? articleModel;
 
   const ShortNewsTile({
     super.key,
+    this.articleModel,
     required this.index,
     required this.theme,
     required this.title,
     required this.chipTitle,
     required this.imageUrl,
     required this.onPressed,
-    required this.iconColor,
   });
 
   @override
@@ -62,13 +63,16 @@ class ShortNewsTile extends StatelessWidget {
                   children: [
                     Padding(
                       padding:  EdgeInsets.only(top: 5.h),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10.r),
-                        child: CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          height: 130.h,
-                          width: 130.w,
-                          fit: BoxFit.cover,
+                      child: Hero(
+                        tag: articleModel?.id ?? 'default-hero-tag',
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10.r),
+                          child: CachedNetworkImage(
+                            imageUrl: imageUrl!=null? imageUrl! : 'https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png',
+                            height: 130.h,
+                            width: 130.w,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     ),

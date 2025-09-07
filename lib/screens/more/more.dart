@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:instanews_pro/riverpod/settings_riverpod/settings_riverpod.dart';
 import 'package:instanews_pro/riverpod/theme_riverpod/theme_riverpod.dart';
 import 'package:instanews_pro/utils/app_colors.dart';
 import 'package:instanews_pro/widgets/toast_msg/toast_msg.dart';
@@ -15,6 +16,8 @@ class More extends ConsumerWidget {
     final themeMode = ref.watch(themeNotifierProvider);
 
     final isDark = ref.watch(themeNotifierProvider) == ThemeMode.dark;
+
+    final showWeather = ref.watch(showWeatherProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -67,9 +70,9 @@ class More extends ConsumerWidget {
                   title: const Text("Show Weather"),
                   leading: Icon(Icons.wb_sunny_outlined,color: theme.iconTheme.color,),
                   trailing: Switch(
-                    value: true,
+                    value: showWeather,
                     onChanged: (value) {
-
+                      ref.read(showWeatherProvider.notifier).saveWeather(value);
                     },
                   ),
                 ),
@@ -78,7 +81,7 @@ class More extends ConsumerWidget {
 
             SizedBox(height: 30.h),
 
-            _sectionHeader(theme, Icons.contact_page_outlined, "Other"),
+            _sectionHeader(theme, Icons.read_more_sharp, "Other"),
             SizedBox(height: 20.h),
             _settingsCard(
               context,
@@ -153,8 +156,7 @@ class More extends ConsumerWidget {
     );
   }
 
-  Widget _settingsCard(BuildContext context,
-      {required List<Widget> items}) {
+  Widget _settingsCard(BuildContext context, {required List<Widget> items}) {
     var theme = Theme.of(context);
 
     return Container(

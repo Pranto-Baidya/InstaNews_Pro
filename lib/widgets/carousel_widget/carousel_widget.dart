@@ -3,15 +3,16 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:instanews_pro/news_models/article_model/article_model.dart';
+import 'package:intl/intl.dart';
 import '../../screens/home/home.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class CarouselWidget extends StatelessWidget {
   final ThemeData theme;
   final WidgetRef ref;
-  final String title;
-  final String chipTitle;
-  final String imageUrl;
-  final VoidCallback onPressed;
+  final List<ArticleModel> articles;
+  final void Function(int index) onPressed;
   final Color iconColor;
   final bool? isBookmarked;
 
@@ -19,21 +20,21 @@ class CarouselWidget extends StatelessWidget {
     super.key,
     required this.theme,
     required this.ref,
-    required this.title,
-    required this.chipTitle,
-    required this.imageUrl,
-    required this.onPressed,
+    required this.articles,
     required this.iconColor,
+    required this.onPressed,
     this.isBookmarked,
   });
 
   @override
   Widget build(BuildContext context) {
+
     return CarouselSlider.builder(
-      itemCount: 5,
+      itemCount: articles.length,
       itemBuilder: (context, index, _) {
+        final article = articles[index];
         return Hero(
-          tag: 'news_details_$index',
+          tag: article.id,
           flightShuttleBuilder: (flightContext, animation, flightDirection,
               fromHeroContext, toHeroContext) {
             return Material(
@@ -42,7 +43,7 @@ class CarouselWidget extends StatelessWidget {
             );
           },
           child: GestureDetector(
-            onTap: onPressed,
+              onTap: () => onPressed(index),
             child: Container(
               margin: EdgeInsets.symmetric(horizontal: 8.w),
               decoration: BoxDecoration(
@@ -59,8 +60,8 @@ class CarouselWidget extends StatelessWidget {
                     offset: const Offset(0, 2),
                   ),
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 12,
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 10,
                     offset: const Offset(0, 6),
                   ),
                 ],
@@ -71,7 +72,7 @@ class CarouselWidget extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     CachedNetworkImage(
-                      imageUrl: imageUrl,
+                      imageUrl: article.imageUrl,
                       fit: BoxFit.cover,
                     ),
                     Container(
@@ -86,31 +87,39 @@ class CarouselWidget extends StatelessWidget {
                         ),
                       ),
                     ),
-
                     Padding(
                       padding: EdgeInsets.all(12.w),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            padding: EdgeInsets.all(10),
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: theme.colorScheme.primary,
                               borderRadius: BorderRadius.circular(7.r),
                             ),
                             child: Text(
-                              chipTitle,
-                              style: theme.textTheme.bodySmall?.copyWith(
+                              article.categories.take(1).map((i)=>i.toUpperCase()).join(''),
+                              style: theme.textTheme.titleSmall?.copyWith(
                                 color: Colors.white,
-                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
-
                           const Spacer(),
-
+                          Wrap(
+                            children: [
+                              Text(article.sourceName,style: theme.textTheme.titleSmall?.copyWith(color: Colors.white),),
+                              SizedBox(width: 5.w,),
+                              Icon(Icons.verified,color: theme.colorScheme.primary,size: 15,),
+                              SizedBox(width: 5.w,),
+                              Text('${article.dateTime != null ? DateFormat('dd/MM/yyyy hh:mm a').format(article.dateTime!): 'Unknown'}',
+                                style: theme.textTheme.titleSmall?.copyWith(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 5.h,),
                           Text(
-                            title,
+                            article.title,
                             style: theme.textTheme.titleMedium?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -118,8 +127,7 @@ class CarouselWidget extends StatelessWidget {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          SizedBox(height: 10.h),
-
+                          SizedBox(height: 12.h),
                         ],
                       ),
                     ),
@@ -135,7 +143,7 @@ class CarouselWidget extends StatelessWidget {
         viewportFraction: 0.9,
         scrollPhysics: const BouncingScrollPhysics(),
         autoPlay: true,
-        height: 200.h, // adjust to your design
+        height: 200.h,
         enlargeCenterPage: true,
         enlargeStrategy: CenterPageEnlargeStrategy.height,
         onPageChanged: (index, _) {
