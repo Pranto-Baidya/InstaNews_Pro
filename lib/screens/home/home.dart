@@ -1,11 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:instanews_pro/riverpod/news_riverpod/news_riverpod.dart';
-import 'package:instanews_pro/riverpod/settings_riverpod/settings_riverpod.dart';
 import 'package:instanews_pro/riverpod/theme_riverpod/theme_riverpod.dart';
 import 'package:instanews_pro/riverpod/weather_riverpod/weather_riverpod.dart';
 import 'package:instanews_pro/screens/explore/explore.dart';
@@ -15,18 +14,26 @@ import 'package:intl/intl.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../../riverpod/news_riverpod/news_by_category.dart';
+import '../../riverpod/show_weather_pref_riverpod/show_weather_pref_riverpod.dart';
 import '../../utils/app_colors.dart';
 import '../../widgets/app_title/app_title.dart';
 import '../../widgets/carousel_widget/carousel_widget.dart';
 import '../../widgets/news_details_screen/news_details.dart';
 import '../../widgets/short_news_tile/short_news_tile.dart';
+import '../../widgets/weather_lite/weather_lite.dart';
 import '../all_news/all_news.dart';
 
 final selectedProvider = StateProvider<int>((ref) => 0);
 final indexProvider = StateProvider<int>((ref) => 0);
 
-final breakingNewsProvider = StateNotifierProvider<NewsByCategoryNotifier,NewsCategoryNotifier>((ref)=>NewsByCategoryNotifier()..fetchCategory('top'));
-final worldNewsProvider = StateNotifierProvider<NewsByCategoryNotifier,NewsCategoryNotifier>((ref)=>NewsByCategoryNotifier()..fetchCategory('world'));
+final breakingNewsProvider =
+    StateNotifierProvider<NewsByCategoryNotifier, NewsCategoryNotifier>(
+      (ref) => NewsByCategoryNotifier()..fetchCategory('top'),
+    );
+final worldNewsProvider =
+    StateNotifierProvider<NewsByCategoryNotifier, NewsCategoryNotifier>(
+      (ref) => NewsByCategoryNotifier()..fetchCategory('world'),
+    );
 
 class Home extends ConsumerStatefulWidget {
   const Home({super.key});
@@ -42,6 +49,8 @@ class _HomeState extends ConsumerState<Home> {
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(newsNotifierProvider.notifier).fetchNewsForCarousel();
+      ref.read(breakingNewsProvider.notifier).fetchCategory('top');
+      ref.read(worldNewsProvider.notifier).fetchCategory('world');
       ref.read(weatherProvider.notifier).fetchCurrentWeather();
     });
     super.initState();
@@ -49,7 +58,6 @@ class _HomeState extends ConsumerState<Home> {
 
   @override
   Widget build(BuildContext context) {
-
     var theme = Theme.of(context);
     final index = ref.watch(indexProvider);
     final isDark = ref.watch(themeNotifierProvider) == ThemeMode.dark;
@@ -58,7 +66,6 @@ class _HomeState extends ConsumerState<Home> {
     final worldNewsCategory = ref.watch(worldNewsProvider);
     final weatherState = ref.watch(weatherProvider);
     final showWeather = ref.watch(showWeatherProvider);
-
 
     return Scaffold(
       appBar: AppBar(
@@ -85,9 +92,8 @@ class _HomeState extends ConsumerState<Home> {
                         width: 0,
                         theme: theme,
                         textStyleFirst: theme.textTheme.headlineMedium!,
-                        textStyleSecond: theme.textTheme.headlineMedium!.copyWith(
-                          color: theme.colorScheme.primary,
-                        ),
+                        textStyleSecond: theme.textTheme.headlineMedium!
+                            .copyWith(color: theme.colorScheme.primary),
                         textStyleThird: theme.textTheme.titleSmall?.copyWith(
                           color: theme.colorScheme.primary,
                         ),
@@ -107,66 +113,17 @@ class _HomeState extends ConsumerState<Home> {
                 ],
               ),
             ),
-            showWeather?SizedBox(width: 20.w):SizedBox.shrink(),
-            Visibility(
-              visible: showWeather,
-              replacement: SizedBox.shrink(),
-              child: Expanded(
-                child: Row(
-                  children: [
-                    Builder(
-                        builder: (context){
-                          return Container(
-                            width: 90.w,
-                            height: 40.h,
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              border: Border.all(color: Colors.grey),
-                              borderRadius: BorderRadius.circular(30.r),
-                            ),
-                            child: weatherState.isLoading?
-                                Center(child: AppLoader.mainLoader(25),)
-                            :Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  weatherState.weather!=null? "${weatherState.weather!.tempC.toStringAsFixed(0)}°C" : '',
-                                  style: theme.textTheme.titleSmall,
-                                ),
-                                SizedBox(width: 5.w),
-                                CachedNetworkImage(
-                                  imageUrl: weatherState.weather!=null?weatherState.weather!.icon : '',
-                                  fit: BoxFit.cover,
-                                  width: 30.w,
-                                  height: 30.h,
-                                  errorWidget: (context,url,error)=> Icon(Icons.broken_image_outlined,color: Colors.red,size: 50,),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                    )
-                  ],
-                ),
+            showWeather ? Spacer() : SizedBox.shrink(),
+            Padding(
+              padding: const EdgeInsets.only(right: 5),
+              child: Visibility(
+                visible: showWeather,
+                replacement: SizedBox.shrink(),
+                child: WeatherLite(theme: theme, weatherState: weatherState),
               ),
             ),
           ],
         ),
-        actions: [
-          Flexible(
-            child: Padding(
-              padding: EdgeInsets.only(right: 8.w),
-              child: IconButton(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.notifications_none,
-                  color: theme.iconTheme.color,
-                  size: 30.sp,
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -290,7 +247,8 @@ class _HomeState extends ConsumerState<Home> {
                                 articles: breakingNewsCategory.articles,
                                 iconColor: theme.iconTheme.color!,
                                 onPressed: (index) {
-                                  final article = breakingNewsCategory.articles[index];
+                                  final article =
+                                      breakingNewsCategory.articles[index];
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -305,7 +263,7 @@ class _HomeState extends ConsumerState<Home> {
                                         onShare: () {},
                                         onReadLater: () {},
                                         onReadMore: () {},
-                                        tag: article.id,
+                                        tag: 'breaking_${article.id}',
                                       ),
                                     ),
                                   );
@@ -317,14 +275,14 @@ class _HomeState extends ConsumerState<Home> {
                         ),
                         SizedBox(height: 20.h),
                         _buildNewsTitleRow(theme, 'Recent News', 0),
-                        newsState.isLoading && newsState.articles.isEmpty
+                        newsState.isLoading
                             ? buildShimmer()
                             : buildRecentNewsListView(newsState, theme),
                         SizedBox(height: 20.h),
                         _buildNewsTitleRow(theme, 'International News', 2),
-                        worldNewsCategory.isLoading && worldNewsCategory.articles.isEmpty
+                        worldNewsCategory.isLoading
                             ? buildShimmer()
-                            : buildWorldNewsListView(theme,worldNewsCategory),
+                            : buildWorldNewsListView(theme, worldNewsCategory),
                       ],
                     ),
                   ),
@@ -336,45 +294,52 @@ class _HomeState extends ConsumerState<Home> {
 
   Widget buildRecentNewsListView(NewsState newsState, ThemeData theme) {
     return ListView.builder(
-                          physics: NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: newsState.articles.length,
-                          itemBuilder: (context,index){
-                              final articles = newsState.articles[index];
-                              return ShortNewsTile(
-                                index: index,
-                                theme: theme,
-                                title: articles.title,
-                                chipTitle: articles.categories
-                                    .take(1)
-                                    .map((i) => i.toUpperCase())
-                                    .join(''),
-                                imageUrl: articles.imageUrl,
-                                onPressed: () {
-                                  Navigator.push(context, MaterialPageRoute(
-                                    builder: (_) => NewsDetailPage(
-                                      tag: articles.id,
-                                      imageUrl: articles.imageUrl,
-                                      category: articles.categories.take(1).map((i) => i.toUpperCase()).join(''),
-                                      title: articles.title,
-                                      source: articles.sourceName,
-                                      content: articles.description,
-                                      sourceIcon: articles.sourceIcon,
-                                      onBookmark: () {},
-                                      onShare: () {},
-                                      onReadLater: () {},
-                                      onReadMore: () {},
-                                    ),
-                                  ));
-                                },
-
-                              );
-
-                          }
-                      );
+      physics: NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      itemCount: newsState.articles.length,
+      itemBuilder: (context, index) {
+        final articles = newsState.articles[index];
+        return ShortNewsTile(
+          index: index,
+          theme: theme,
+          title: articles.title,
+          chipTitle: articles.categories
+              .take(1)
+              .map((i) => i.toUpperCase())
+              .join(''),
+          imageUrl: articles.imageUrl,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => NewsDetailPage(
+                  tag: articles.id,
+                  imageUrl: articles.imageUrl,
+                  category: articles.categories
+                      .take(1)
+                      .map((i) => i.toUpperCase())
+                      .join(''),
+                  title: articles.title,
+                  source: articles.sourceName,
+                  content: articles.description,
+                  sourceIcon: articles.sourceIcon,
+                  onBookmark: () {},
+                  onShare: () {},
+                  onReadLater: () {},
+                  onReadMore: () {},
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
-  Widget buildWorldNewsListView(ThemeData theme, NewsCategoryNotifier categoryState) {
+  Widget buildWorldNewsListView(
+    ThemeData theme,
+    NewsCategoryNotifier categoryState,
+  ) {
     return ListView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
@@ -417,7 +382,6 @@ class _HomeState extends ConsumerState<Home> {
       },
     );
   }
-
 
   Widget buildShimmer() {
     return ListView.builder(
@@ -477,7 +441,9 @@ class _HomeState extends ConsumerState<Home> {
               ref.read(breakingNewsProvider.notifier).fetchCategory('top');
               ref.read(worldNewsProvider.notifier).fetchCategory('world');
             } else {
-              ref.read(newsNotifierProvider.notifier).fetchSearchedArticles(value);
+              ref
+                  .read(newsNotifierProvider.notifier)
+                  .fetchSearchedArticles(value);
             }
           },
         ),
@@ -504,18 +470,16 @@ class _HomeState extends ConsumerState<Home> {
           Spacer(),
           TextButton(
             onPressed: () {
-              ref.read(exploreTabIndexProvider.notifier).state = exploreTabIndex;
+              ref.read(exploreTabIndexProvider.notifier).state =
+                  exploreTabIndex;
               ref.read(countProvider.notifier).state = 1;
 
               if (exploreTabIndex == 0) {
                 ref.read(selectedCategory.notifier).state = '';
                 ref.read(newsNotifierProvider.notifier).fetchAllNews();
-
               } else if (exploreTabIndex == 1) {
-
                 ref.read(selectedCategory.notifier).state = 'top';
                 ref.read(categoryNewsProvider.notifier).fetchCategory('top');
-
               } else if (exploreTabIndex == 2) {
                 ref.read(selectedCategory.notifier).state = 'world';
                 ref.read(categoryNewsProvider.notifier).fetchCategory('world');
@@ -524,7 +488,6 @@ class _HomeState extends ConsumerState<Home> {
             style: TextButton.styleFrom(padding: EdgeInsets.all(0)),
             child: Text('View more', style: theme.textTheme.titleMedium),
           ),
-
         ],
       ),
     );
@@ -543,3 +506,4 @@ class _HomeState extends ConsumerState<Home> {
     );
   }
 }
+

@@ -29,126 +29,123 @@ class CarouselWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return CarouselSlider.builder(
-      itemCount: articles.length,
-      itemBuilder: (context, index, _) {
-        final article = articles[index];
-        return Hero(
-          tag: article.id,
-          flightShuttleBuilder: (flightContext, animation, flightDirection,
-              fromHeroContext, toHeroContext) {
-            return Material(
-              color: Colors.transparent,
-              child: toHeroContext.widget,
-            );
-          },
-          child: GestureDetector(
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 10.w),
+      child: CarouselSlider.builder(
+        itemCount: articles.length,
+        itemBuilder: (context, index, _) {
+          final article = articles[index];
+          return Container(
+            margin: EdgeInsets.symmetric(horizontal: 8.w),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: GestureDetector(
               onTap: () => onPressed(index),
-            child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 8.w),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16.r),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    CachedNetworkImage(
-                      imageUrl: article.imageUrl,
-                      fit: BoxFit.cover,
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                          colors: [
-                            Colors.black.withOpacity(0.65),
-                            Colors.transparent,
+              child: Hero(
+                tag: 'breaking_${article.id}',
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16.r),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CachedNetworkImage(
+                        imageUrl: article.imageUrl,
+                        fit: BoxFit.cover,
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.65),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(12.w),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary,
+                                borderRadius: BorderRadius.circular(7.r),
+                              ),
+                              child: Text(
+                                article.categories.take(1).map((i)=>i.toUpperCase()).join(''),
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const Spacer(),
+                            Row(
+                              children: [
+                                Text(article.sourceName,style: theme.textTheme.titleSmall?.copyWith(color: Colors.white),),
+                                SizedBox(width: 5.w,),
+                                Icon(Icons.verified,color: theme.colorScheme.primary,size: 15,),
+                              ],
+                            ),
+                            SizedBox(height: 5.h,),
+                            Text('${article.dateTime != null ? DateFormat('dd/MM/yyyy hh:mm a').format(article.dateTime!): 'Unknown'}',
+                              style: theme.textTheme.titleSmall?.copyWith(color: Colors.white),
+                            ),
+                            SizedBox(height: 5.h,),
+                            Text(
+                              article.title,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            SizedBox(height: 5.h),
                           ],
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(12.w),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primary,
-                              borderRadius: BorderRadius.circular(7.r),
-                            ),
-                            child: Text(
-                              article.categories.take(1).map((i)=>i.toUpperCase()).join(''),
-                              style: theme.textTheme.titleSmall?.copyWith(
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                          const Spacer(),
-                          Wrap(
-                            children: [
-                              Text(article.sourceName,style: theme.textTheme.titleSmall?.copyWith(color: Colors.white),),
-                              SizedBox(width: 5.w,),
-                              Icon(Icons.verified,color: theme.colorScheme.primary,size: 15,),
-                              SizedBox(width: 5.w,),
-                              Text('${article.dateTime != null ? DateFormat('dd/MM/yyyy hh:mm a').format(article.dateTime!): 'Unknown'}',
-                                style: theme.textTheme.titleSmall?.copyWith(color: Colors.white),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 5.h,),
-                          Text(
-                            article.title,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          SizedBox(height: 12.h),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        );
-      },
-      options: CarouselOptions(
-        clipBehavior: Clip.none,
-        viewportFraction: 0.9,
-        scrollPhysics: const BouncingScrollPhysics(),
-        autoPlay: true,
-        height: 200.h,
-        enlargeCenterPage: true,
-        enlargeStrategy: CenterPageEnlargeStrategy.height,
-        onPageChanged: (index, _) {
-          ref.read(indexProvider.notifier).state = index;
+          );
         },
+        options: CarouselOptions(
+          autoPlayCurve: Curves.decelerate,
+          clipBehavior: Clip.none,
+          viewportFraction: 1,
+          scrollPhysics: const BouncingScrollPhysics(),
+          autoPlay: true,
+          height: 200.h,
+          enlargeCenterPage: true,
+          enlargeStrategy: CenterPageEnlargeStrategy.height,
+          onPageChanged: (index, _) {
+            ref.read(indexProvider.notifier).state = index;
+          },
+        ),
       ),
     );
   }

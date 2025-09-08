@@ -114,64 +114,67 @@ class NewsDetailPage extends StatelessWidget {
                   top: 350.h,
                   right: 0,
                   left: 0,
-                  child: Container(
-                    height: MediaQuery.of(context).size.height,
-                    padding: EdgeInsets.all(16.w),
-                    decoration: BoxDecoration(
-                      color: theme.cardColor,
-                      borderRadius: BorderRadius.circular(20.r),
-                    ),
-                    child: Stack(
-                      children: [
-                        Padding(
-                          padding:  EdgeInsets.symmetric(horizontal: 10.w),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(height: 20.h,),
-                              Row(
-                                children: [
-                                  CircleAvatar(
-                                    backgroundImage: sourceIcon!=null? NetworkImage(sourceIcon!) : NetworkImage('https://www.svgrepo.com/show/508699/landscape-placeholder.svg'),
-                                    radius: 18.r,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    physics: BouncingScrollPhysics(),
+                    child: Container(
+                      height: MediaQuery.of(context).size.height,
+                      padding: EdgeInsets.all(16.w),
+                      decoration: BoxDecoration(
+                        color: theme.cardColor,
+                        borderRadius: BorderRadius.circular(20.r),
+                      ),
+                      child: Stack(
+                        children: [
+                          Padding(
+                            padding:  EdgeInsets.symmetric(horizontal: 10.w),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(height: 20.h,),
+                                Row(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundImage: sourceIcon!=null? NetworkImage(sourceIcon!) : NetworkImage('https://www.svgrepo.com/show/508699/landscape-placeholder.svg'),
+                                      radius: 18.r,
+                                    ),
+                                    SizedBox(width: 8.w),
+                                    Text(
+                                      source,
+                                      style: theme.textTheme.titleMedium,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    SizedBox(width: 5.w),
+                                    Icon(Icons.verified, color: theme.colorScheme.primary, size: 18.sp),
+                                  ],
+                                ),
+                                SizedBox(height: 12.h),
+                                Text(
+                                  content,
+                                  style: theme.textTheme.titleMedium,
+                                  maxLines: 10,
+                                ),
+                                TextButton(
+                                  onPressed: onReadMore,
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero,
                                   ),
-                                  SizedBox(width: 8.w),
-                                  Text(
-                                    source,
-                                    style: TextStyle(
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.bold,
+                                  child: Text(
+                                    'Read Full Article Here',
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      color: theme.colorScheme.primary,
+                                      decoration: TextDecoration.underline,
+                                      decorationColor: theme.colorScheme.primary,
                                     ),
                                   ),
-                                  SizedBox(width: 5.w),
-                                  Icon(Icons.verified, color: Colors.blue, size: 18.sp),
-                                ],
-                              ),
-                              SizedBox(height: 12.h),
-                              Text(
-                                content,
-                                style: TextStyle(fontSize: 15.sp, height: 1.5),
-                              ),
-                              TextButton(
-                                onPressed: onReadMore,
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.zero,
                                 ),
-                                child: Text(
-                                  'Read Full Article Here',
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    color: theme.colorScheme.primary,
-                                    decoration: TextDecoration.underline,
-                                    decorationColor: theme.colorScheme.primary,
-                                  ),
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
 
-                      ],
+                        ],
 
+                      ),
                     ),
                   ),
                 ),

@@ -9,7 +9,7 @@ class ApiService {
 
   static final apiKey = dotenv.env['News_APIKEY'];
 
-  static final String baseUrl = 'https://newsdata.io/api/1/latest?apikey=$apiKey&size=5&language=en&removeduplicate=1';
+  static final String baseUrl = 'https://newsdata.io/api/1/latest?apikey=$apiKey&size=5&removeduplicate=1';
 
   static Future<Map<String,dynamic>> fetchAllNews(String? nextPage, bool isSearching,String query)async{
     String url = baseUrl;
@@ -28,6 +28,7 @@ class ApiService {
     }
 
     try {
+
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
@@ -57,9 +58,9 @@ class ApiService {
         url = '$url&page=$nextPage';
       }
 
-      final response = await http.get(Uri.parse(url));
-
       try {
+        final response = await http.get(Uri.parse(url));
+
         if (response.statusCode == 200) {
           Map<String, dynamic> json = jsonDecode(response.body);
           List<dynamic> data = json['results'];
@@ -77,4 +78,36 @@ class ApiService {
         throw Exception(e.toString());
       }
     }
+
+  static Future<Map<String, dynamic>> fetchNewsByCountryAndLanguage(String? nextPage, List<String> countries, List<String> languages) async {
+
+    String country = countries.join(',');
+    String language = languages.join(',');
+
+    String url = '$baseUrl&language=$language&country=$country';
+
+    if (nextPage != null) {
+      url = '$url&page=$nextPage';
+    }
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        final List<dynamic> data = json['results'] ?? [];
+        final List<ArticleModel> articles =
+        data.map((item) => ArticleModel.fromJson(item)).toList();
+
+        return {
+          'articles': articles,
+          'nextPage': json['nextPage'],
+        };
+      } else {
+        throw Exception('Failed to fetch data, \n${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching news: $e');
+    }
+  }
   }

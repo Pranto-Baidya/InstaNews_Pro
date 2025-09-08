@@ -56,6 +56,7 @@ dependencies:
   cached_network_image: ^3.4.1
   timeago: ^3.7.1
   flutter_dotenv: ^6.0.0
+  avatar_glow: ^3.0.1
 
 dev_dependencies:
   flutter_test:

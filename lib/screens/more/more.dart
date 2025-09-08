@@ -2,22 +2,210 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:instanews_pro/riverpod/settings_riverpod/settings_riverpod.dart';
+import 'package:instanews_pro/riverpod/news_riverpod/news_by_lang_and_country.dart';
+import 'package:instanews_pro/riverpod/select_lang_country_pref/lang_country_pref_riverpod.dart';
 import 'package:instanews_pro/riverpod/theme_riverpod/theme_riverpod.dart';
 import 'package:instanews_pro/utils/app_colors.dart';
 import 'package:instanews_pro/widgets/toast_msg/toast_msg.dart';
+
+import '../../riverpod/show_weather_pref_riverpod/show_weather_pref_riverpod.dart';
+
+final tempCountrySelectionProvider = StateProvider<List<String>>((ref) => []);
+final tempLanguageSelectionProvider = StateProvider<List<String>>((ref) => []);
 
 class More extends ConsumerWidget {
   const More({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
     final theme = Theme.of(context);
+
     final themeMode = ref.watch(themeNotifierProvider);
 
     final isDark = ref.watch(themeNotifierProvider) == ThemeMode.dark;
 
     final showWeather = ref.watch(showWeatherProvider);
+
+    void showCountryDialogue(BuildContext context, WidgetRef ref) {
+      final theme = Theme.of(context);
+
+      List<String> availableCountries = ['us', 'bd', 'in', 'pk', 'gb'];
+      List<String> fullCountryName = [
+        '(United States)',
+        '(Bangladesh)',
+        '(India)',
+        '(Pakistan)',
+        '(United Kingdom)'
+      ];
+
+      Map<String, String> countries = {
+        for (int i = 0; i < availableCountries.length; i++)
+          availableCountries[i]: fullCountryName[i],
+      };
+
+      final currentSelection = ref.read(langAndCountryPrefProvider).countries;
+
+      ref.read(tempCountrySelectionProvider.notifier).state = List.from(currentSelection);
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(
+              'Select Countries',
+              style: theme.textTheme.titleLarge
+                  ?.copyWith(color: theme.colorScheme.primary),
+            ),
+            content: Consumer(
+              builder: (context, ref, _) {
+                final tempSelection = ref.watch(tempCountrySelectionProvider);
+
+                return SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ...countries.entries.map((country) {
+                        final isSelected = tempSelection.contains(country.key);
+
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Checkbox(
+                            fillColor: theme.checkboxTheme.fillColor,
+                            checkColor: Colors.white,
+                            value: isSelected,
+                            onChanged: (value) {
+                              final notifier = ref.read(tempCountrySelectionProvider.notifier);
+                              final updated = List<String>.from(tempSelection);
+
+                              if (value == true) {
+                                updated.add(country.key);
+                              } else {
+                                updated.remove(country.key);
+                              }
+
+                              notifier.state = updated;
+                            },
+                          ),
+                          title: Text(
+                            '${country.key} ${country.value}',
+                            style: theme.textTheme.titleMedium,
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                );
+              },
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('Cancel', style: theme.textTheme.titleSmall),
+              ),
+              TextButton(
+                onPressed: () {
+                  final tempSelection = ref.read(tempCountrySelectionProvider);
+
+                  ref.read(langAndCountryPrefProvider.notifier).saveCountries(tempSelection);
+
+                  Navigator.pop(context);
+                },
+                child: Text('Done', style: theme.textTheme.titleSmall),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    void showLanguageDialogue(BuildContext context, WidgetRef ref) {
+      final theme = Theme.of(context);
+
+      final getValues = ref.watch(langAndCountryPrefProvider);
+      final getMethods = ref.read(langAndCountryPrefProvider.notifier);
+
+      List<String> availableLanguages = ['en', 'bn', 'hi'];
+      List<String> fullLangName = ['(English)', '(Bengali)', '(Hindi)'];
+
+      Map<String, String> languages = {
+        for (int i = 0; i < availableLanguages.length; i++)
+          availableLanguages[i]: fullLangName[i],
+      };
+
+      List<String> currentSelection = getValues.languages;
+
+      ref.read(tempLanguageSelectionProvider.notifier).state = List.from(currentSelection);
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(
+              'Select Languages',
+              style: theme.textTheme.titleLarge
+                  ?.copyWith(color: theme.colorScheme.primary),
+            ),
+            content: Consumer(
+              builder: (context, ref, _) {
+                final temp = ref.watch(tempLanguageSelectionProvider);
+
+                return SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ...languages.entries.map((lang) {
+                        final isSelected = temp.contains(lang.key);
+
+                        return ListTile(
+                          leading: Checkbox(
+                            fillColor: theme.checkboxTheme.fillColor,
+                            checkColor: Colors.white,
+                            value: isSelected,
+                            onChanged: (value) {
+                              final updated = List<String>.from(temp);
+                              if (value == true) {
+                                updated.add(lang.key);
+                              } else {
+                                updated.remove(lang.key);
+                              }
+                              ref.read(tempLanguageSelectionProvider.notifier).state = updated;
+                            },
+                          ),
+                          title: Text(
+                            '${lang.key} ${lang.value}',
+                            style: theme.textTheme.titleMedium,
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                );
+              },
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('Cancel', style: theme.textTheme.titleSmall),
+              ),
+              TextButton(
+                onPressed: () {
+                  final finalSelection = ref.read(tempLanguageSelectionProvider);
+                  getMethods.saveLanguages(finalSelection);
+                  Navigator.pop(context);
+                },
+                child: Text('Done', style: theme.textTheme.titleSmall),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
 
     return Scaffold(
       appBar: AppBar(
@@ -40,6 +228,31 @@ class More extends ConsumerWidget {
         padding: EdgeInsets.symmetric(horizontal: 20.w),
         child: Column(
           children: [
+            SizedBox(height: 20.h),
+            _sectionHeader(theme, Icons.filter_list, "Filter News"),
+            SizedBox(height: 20.h),
+            _settingsCard(
+                context, 
+                items: [
+                  ListTile(
+                    onTap: (){
+                      showCountryDialogue(context,ref);
+                    },
+                    leading: Icon(Icons.language,color: theme.iconTheme.color,),
+                    title: const Text('Read News By Country',),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  ),
+                  ListTile(
+                    onTap: (){
+                      showLanguageDialogue(context, ref);
+                    },
+                    leading: Icon(Icons.translate,color: theme.iconTheme.color,),
+                    title: const Text('Read News By Language',),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  ),
+
+                ]
+            ),
             SizedBox(height: 20.h),
             _sectionHeader(theme, Icons.tune, "General"),
             SizedBox(height: 20.h),
@@ -81,7 +294,7 @@ class More extends ConsumerWidget {
 
             SizedBox(height: 30.h),
 
-            _sectionHeader(theme, Icons.read_more_sharp, "Other"),
+            _sectionHeader(theme, Icons.info_outline, "Other"),
             SizedBox(height: 20.h),
             _settingsCard(
               context,
