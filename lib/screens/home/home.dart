@@ -13,7 +13,6 @@ import 'package:instanews_pro/widgets/shimmer_effects/shimmer_listview.dart';
 import 'package:intl/intl.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-import '../../riverpod/news_riverpod/news_by_category.dart';
 import '../../riverpod/show_weather_pref_riverpod/show_weather_pref_riverpod.dart';
 import '../../utils/app_colors.dart';
 import '../../widgets/app_title/app_title.dart';
@@ -26,14 +25,8 @@ import '../all_news/all_news.dart';
 final selectedProvider = StateProvider<int>((ref) => 0);
 final indexProvider = StateProvider<int>((ref) => 0);
 
-final breakingNewsProvider =
-    StateNotifierProvider<NewsByCategoryNotifier, NewsCategoryNotifier>(
-      (ref) => NewsByCategoryNotifier()..fetchCategory('top'),
-    );
-final worldNewsProvider =
-    StateNotifierProvider<NewsByCategoryNotifier, NewsCategoryNotifier>(
-      (ref) => NewsByCategoryNotifier()..fetchCategory('world'),
-    );
+final breakingNewsProvider = StateNotifierProvider<NewsNotifier,NewsState>((ref)=>NewsNotifier()..fetchCategory('top'));
+final worldNewsProvider = StateNotifierProvider<NewsNotifier,NewsState>((ref)=>NewsNotifier()..fetchCategory('world'));
 
 class Home extends ConsumerStatefulWidget {
   const Home({super.key});
@@ -47,25 +40,28 @@ class _HomeState extends ConsumerState<Home> {
 
   @override
   void initState() {
+    super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(newsNotifierProvider.notifier).fetchNewsForCarousel();
+      ref.read(newsNotifierProvider.notifier).fetchNewsByCountryAndLanguage();
       ref.read(breakingNewsProvider.notifier).fetchCategory('top');
       ref.read(worldNewsProvider.notifier).fetchCategory('world');
       ref.read(weatherProvider.notifier).fetchCurrentWeather();
     });
-    super.initState();
   }
+
 
   @override
   Widget build(BuildContext context) {
+
     var theme = Theme.of(context);
     final index = ref.watch(indexProvider);
     final isDark = ref.watch(themeNotifierProvider) == ThemeMode.dark;
     final newsState = ref.watch(newsNotifierProvider);
-    final breakingNewsCategory = ref.watch(breakingNewsProvider);
-    final worldNewsCategory = ref.watch(worldNewsProvider);
     final weatherState = ref.watch(weatherProvider);
     final showWeather = ref.watch(showWeatherProvider);
+
+    final breakingNews = ref.watch(breakingNewsProvider);
+    final worldNews = ref.watch(worldNewsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -152,12 +148,8 @@ class _HomeState extends ConsumerState<Home> {
 
                       return NotificationListener<ScrollNotification>(
                         onNotification: (scrollInfo) {
-                          if (scrollInfo.metrics.pixels >=
-                                  scrollInfo.metrics.maxScrollExtent - 100 &&
-                              !newsState.isLoading) {
-                            ref
-                                .read(newsNotifierProvider.notifier)
-                                .fetchPaginatedSearchedArticles();
+                          if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 100 && !newsState.isLoading) {
+                            ref.read(newsNotifierProvider.notifier).fetchPaginatedSearchedArticles();
                           }
                           return false;
                         },
@@ -221,7 +213,7 @@ class _HomeState extends ConsumerState<Home> {
                         SizedBox(height: 10.h),
                         _buildNewsTitleRow(theme, 'Breaking News', 1),
                         SizedBox(height: 15.h),
-                        newsState.isLoading
+                        breakingNews.isLoading
                             ? SizedBox(
                                 height: 200.h,
                                 child: SingleChildScrollView(
@@ -244,11 +236,10 @@ class _HomeState extends ConsumerState<Home> {
                             : CarouselWidget(
                                 theme: theme,
                                 ref: ref,
-                                articles: breakingNewsCategory.articles,
+                                articles: breakingNews.articles,
                                 iconColor: theme.iconTheme.color!,
                                 onPressed: (index) {
-                                  final article =
-                                      breakingNewsCategory.articles[index];
+                                  final article = breakingNews.articles[index];
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -280,9 +271,9 @@ class _HomeState extends ConsumerState<Home> {
                             : buildRecentNewsListView(newsState, theme),
                         SizedBox(height: 20.h),
                         _buildNewsTitleRow(theme, 'International News', 2),
-                        worldNewsCategory.isLoading
+                        worldNews.isLoading
                             ? buildShimmer()
-                            : buildWorldNewsListView(theme, worldNewsCategory),
+                            : buildWorldNewsListView(theme, worldNews),
                       ],
                     ),
                   ),
@@ -338,7 +329,7 @@ class _HomeState extends ConsumerState<Home> {
 
   Widget buildWorldNewsListView(
     ThemeData theme,
-    NewsCategoryNotifier categoryState,
+    NewsState categoryState,
   ) {
     return ListView.builder(
       shrinkWrap: true,
@@ -437,13 +428,11 @@ class _HomeState extends ConsumerState<Home> {
           ),
           onChanged: (value) {
             if (value.isEmpty) {
-              ref.read(newsNotifierProvider.notifier).fetchAllNews();
+              ref.read(newsNotifierProvider.notifier).fetchNewsByCountryAndLanguage();
               ref.read(breakingNewsProvider.notifier).fetchCategory('top');
               ref.read(worldNewsProvider.notifier).fetchCategory('world');
             } else {
-              ref
-                  .read(newsNotifierProvider.notifier)
-                  .fetchSearchedArticles(value);
+              ref.read(newsNotifierProvider.notifier).fetchSearchedArticles(value);
             }
           },
         ),
@@ -476,13 +465,13 @@ class _HomeState extends ConsumerState<Home> {
 
               if (exploreTabIndex == 0) {
                 ref.read(selectedCategory.notifier).state = '';
-                ref.read(newsNotifierProvider.notifier).fetchAllNews();
+                ref.read(newsNotifierProvider.notifier).fetchNewsByCountryAndLanguage();
               } else if (exploreTabIndex == 1) {
                 ref.read(selectedCategory.notifier).state = 'top';
-                ref.read(categoryNewsProvider.notifier).fetchCategory('top');
+                ref.read(newsNotifierProvider.notifier).fetchCategory('top');
               } else if (exploreTabIndex == 2) {
                 ref.read(selectedCategory.notifier).state = 'world';
-                ref.read(categoryNewsProvider.notifier).fetchCategory('world');
+                ref.read(newsNotifierProvider.notifier).fetchCategory('world');
               }
             },
             style: TextButton.styleFrom(padding: EdgeInsets.all(0)),

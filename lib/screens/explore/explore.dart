@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:instanews_pro/riverpod/news_riverpod/news_by_category.dart';
 import 'package:instanews_pro/riverpod/news_riverpod/news_riverpod.dart';
 import 'package:instanews_pro/riverpod/theme_riverpod/theme_riverpod.dart';
-import 'package:instanews_pro/utils/app_colors.dart';
 import 'package:instanews_pro/widgets/news_details_screen/news_details.dart';
 import 'package:instanews_pro/widgets/shimmer_effects/shimmer_listview.dart';
 import 'package:instanews_pro/widgets/short_news_tile/short_news_tile.dart';
@@ -33,7 +31,7 @@ class _ExploreNewsState extends ConsumerState<ExploreNews> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(exploreTabIndexProvider.notifier).state = widget.initialIndex;
-      ref.read(newsNotifierProvider.notifier).fetchAllNews();
+      ref.read(newsNotifierProvider.notifier).fetchNewsByCountryAndLanguage();
     });
 
   }
@@ -50,8 +48,8 @@ class _ExploreNewsState extends ConsumerState<ExploreNews> {
 
     final category = ref.watch(selectedCategory);
 
-    final categoryState = ref.watch(categoryNewsProvider);
-    final categoryNotifier = ref.read(categoryNewsProvider.notifier);
+    final categoryState = ref.watch(newsNotifierProvider);
+    final categoryNotifier = ref.read(newsNotifierProvider.notifier);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -111,7 +109,7 @@ class _ExploreNewsState extends ConsumerState<ExploreNews> {
           selectedIndex==0?
            Expanded(
                child: RefreshIndicator(
-                   onRefresh: ()=> newsNotifier.fetchAllNews(),
+                   onRefresh: ()=> newsNotifier.fetchNewsByCountryAndLanguage(),
                    backgroundColor: theme.cardColor,
                    color: theme.colorScheme.primary,
                    child: Builder(
@@ -133,7 +131,7 @@ class _ExploreNewsState extends ConsumerState<ExploreNews> {
                            return NotificationListener<ScrollNotification>(
                              onNotification: (scrollInfo){
                                if(scrollInfo.metrics.pixels>=scrollInfo.metrics.maxScrollExtent-100 && !newsState.isLoading){
-                                 newsNotifier.fetchPaginatedNews();
+                                 newsNotifier.fetchMorePersonalizedNews();
                                }
                                return false;
                              },
@@ -205,7 +203,7 @@ class _ExploreNewsState extends ConsumerState<ExploreNews> {
                         return NotificationListener<ScrollNotification>(
                           onNotification: (scrollInfo){
                              if(scrollInfo.metrics.pixels>=scrollInfo.metrics.maxScrollExtent-100 && !categoryState.isLoading){
-                               categoryNotifier.fetchMoreNews();
+                               categoryNotifier.fetchMoreCategoryNews();
                              }
                              return false;
                           },
@@ -335,7 +333,7 @@ class ExploreNewsTabBar extends StatelessWidget {
                       if (i != 'All News') {
                         String words = i.split(' ').take(1).map((i)=>i.toLowerCase()).join('');
                         ref.read(selectedCategory.notifier).state = words;
-                        ref.read(categoryNewsProvider.notifier).fetchCategory(words);
+                        ref.read(newsNotifierProvider.notifier).fetchCategory(words);
                       } else {
                         ref.read(selectedCategory.notifier).state = '';
                       }

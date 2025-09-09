@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instanews_pro/api_service/api_service.dart';
 import 'package:instanews_pro/news_models/article_model/article_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final newsNotifierProvider = StateNotifierProvider<NewsNotifier, NewsState>(
       (ref) => NewsNotifier(),
@@ -13,6 +14,9 @@ class NewsState {
   final String query;
   final String? nextPage;
   final String? error;
+  final String selectedCategory;
+  final List<String> countries;
+  final List<String> languages;
 
   NewsState({
     this.articles = const [],
@@ -21,6 +25,9 @@ class NewsState {
     this.query = '',
     this.nextPage,
     this.error,
+    this.selectedCategory = '',
+    this.countries = const [],
+    this.languages = const [],
   });
 
   NewsState copyWith({
@@ -30,6 +37,9 @@ class NewsState {
     String? query,
     String? nextPage,
     String? error,
+    String? selectedCategory,
+    List<String>? countries,
+    List<String>? languages,
   }) {
     return NewsState(
       articles: articles ?? this.articles,
@@ -38,76 +48,46 @@ class NewsState {
       query: query ?? this.query,
       error: error ?? this.error,
       nextPage: nextPage ?? this.nextPage,
+      selectedCategory: selectedCategory ?? this.selectedCategory,
+      countries: countries ?? this.countries,
+      languages: languages ?? this.languages,
     );
   }
 }
 
 class NewsNotifier extends StateNotifier<NewsState> {
-  NewsNotifier() : super(NewsState());
-
-  Future<void> fetchAllNews() async {
-    state = state.copyWith(
-      isLoading: true,
-      error: null,
-      articles: [],
-      nextPage: null,
-      isSearching: false,
-      query: '',
-    );
-
-    try {
-      final result = await ApiService.fetchAllNews(null, false, '',);
-
-      state = state.copyWith(
-        articles: result['articles'],
-        nextPage: result['nextPage'],
-        isLoading: false,
-        error: null,
-      );
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-    }
+  NewsNotifier() : super(NewsState()) {
+    _loadPrefs();
   }
 
-  Future<void> fetchPaginatedNews() async {
-    if (state.nextPage == null || state.isLoading) {
-      return;
-    }
+  Future<void> _loadPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedCountries = prefs.getStringList('countries') ?? [];
+    final savedLanguages = prefs.getStringList('languages') ?? [];
 
-    try {
-      state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(countries: savedCountries, languages: savedLanguages);
 
-      final result = await ApiService.fetchAllNews(state.nextPage, false, '');
-
-      state = state.copyWith(
-        articles: [...state.articles, ...result['articles']],
-        nextPage: result['nextPage'],
-        isLoading: false,
-        error: null,
-      );
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-    }
+    await fetchNewsByCountryAndLanguage();
   }
 
-  Future<void> fetchNewsForCarousel() async {
-    state = state.copyWith(isLoading: true, error: null);
+  Future<void> saveCountries(List<String> countries) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('countries', countries);
+    state = state.copyWith(countries: countries);
 
-    try {
-      final result = await ApiService.fetchAllNews(null, false, '',);
-
-      state = state.copyWith(
-        articles: result['articles'],
-        nextPage: null,
-        isLoading: false,
-      );
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-    }
+    await fetchNewsByCountryAndLanguage();
   }
+
+  Future<void> saveLanguages(List<String> languages) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('languages', languages);
+    state = state.copyWith(languages: languages);
+
+    await fetchNewsByCountryAndLanguage();
+  }
+
 
   Future<void> fetchSearchedArticles(String query) async {
-
     state = state.copyWith(
       isLoading: true,
       error: null,
@@ -115,16 +95,15 @@ class NewsNotifier extends StateNotifier<NewsState> {
       nextPage: null,
       query: query,
       isSearching: true,
+      selectedCategory: '',
     );
 
     try {
-      final result = await ApiService.fetchAllNews(null, true, query);
-
+      final result = await ApiService.fetchNewsByCountryAndLanguage(null, state.countries,state.languages,true, query);
       state = state.copyWith(
         articles: result['articles'],
         nextPage: result['nextPage'],
         isLoading: false,
-        error: null,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -132,24 +111,108 @@ class NewsNotifier extends StateNotifier<NewsState> {
   }
 
   Future<void> fetchPaginatedSearchedArticles() async {
-    if (state.nextPage == null || state.isLoading) {
-      return;
-    }
+    if (state.nextPage == null || state.isLoading) return;
 
     try {
       state = state.copyWith(isLoading: true, error: null);
-
-      final result = await ApiService.fetchAllNews(state.nextPage, true, state.query);
-
+      final result =
+      await ApiService.fetchNewsByCountryAndLanguage(state.nextPage,state.languages,state.countries, true, state.query);
       state = state.copyWith(
         articles: [...state.articles, ...result['articles']],
         nextPage: result['nextPage'],
         isLoading: false,
-        error: null,
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
+  Future<void> fetchCategory(String category) async {
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      articles: [],
+      nextPage: null,
+      selectedCategory: category,
+      isSearching: false,
+      query: '',
+    );
+
+    try {
+      final result = await ApiService.fetchNewsByCategory(category, null,state.languages,state.countries);
+      state = state.copyWith(
+        articles: result['articles'],
+        nextPage: result['nextPage'],
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> fetchMoreCategoryNews() async {
+    if (state.nextPage == null || state.isLoading) return;
+
+    try {
+      state = state.copyWith(isLoading: true, error: null);
+      final result = await ApiService.fetchNewsByCategory(
+          state.selectedCategory, state.nextPage,state.countries,state.languages);
+      state = state.copyWith(
+        articles: [...state.articles, ...result['articles']],
+        nextPage: result['nextPage'],
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> fetchNewsByCountryAndLanguage() async {
+    final countries = state.countries;
+    final languages = state.languages;
+
+    state = state.copyWith(
+      isLoading: true,
+      error: null,
+      articles: [],
+      nextPage: null,
+      isSearching: false,
+      query: '',
+      selectedCategory: '',
+    );
+
+    try {
+      final result = await ApiService.fetchNewsByCountryAndLanguage(
+          null, countries, languages,false,'');
+      state = state.copyWith(
+        articles: result['articles'],
+        nextPage: result['nextPage'],
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> fetchMorePersonalizedNews() async {
+    if (state.nextPage == null || state.isLoading) return;
+
+    try {
+      state = state.copyWith(isLoading: true, error: null);
+      final result = await ApiService.fetchNewsByCountryAndLanguage(
+        state.nextPage,
+        state.countries,
+        state.languages,
+        false,
+        ''
+      );
+      state = state.copyWith(
+        articles: [...state.articles, ...result['articles']],
+        nextPage: result['nextPage'],
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
 }

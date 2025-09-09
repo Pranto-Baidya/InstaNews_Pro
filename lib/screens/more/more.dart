@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:instanews_pro/riverpod/news_riverpod/news_by_lang_and_country.dart';
-import 'package:instanews_pro/riverpod/select_lang_country_pref/lang_country_pref_riverpod.dart';
 import 'package:instanews_pro/riverpod/theme_riverpod/theme_riverpod.dart';
 import 'package:instanews_pro/utils/app_colors.dart';
 import 'package:instanews_pro/widgets/toast_msg/toast_msg.dart';
 
+import '../../riverpod/news_riverpod/news_riverpod.dart';
 import '../../riverpod/show_weather_pref_riverpod/show_weather_pref_riverpod.dart';
 
 final tempCountrySelectionProvider = StateProvider<List<String>>((ref) => []);
@@ -44,9 +43,8 @@ class More extends ConsumerWidget {
           availableCountries[i]: fullCountryName[i],
       };
 
-      final currentSelection = ref.read(langAndCountryPrefProvider).countries;
-
-      ref.read(tempCountrySelectionProvider.notifier).state = List.from(currentSelection);
+      final currentSelection = ref.watch(newsNotifierProvider).countries;
+      List<String> tempSelection = List.from(currentSelection);
 
       showDialog(
         context: context,
@@ -57,10 +55,8 @@ class More extends ConsumerWidget {
               style: theme.textTheme.titleLarge
                   ?.copyWith(color: theme.colorScheme.primary),
             ),
-            content: Consumer(
-              builder: (context, ref, _) {
-                final tempSelection = ref.watch(tempCountrySelectionProvider);
-
+            content: StatefulBuilder(
+              builder: (context, setState) {
                 return SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -75,16 +71,13 @@ class More extends ConsumerWidget {
                             checkColor: Colors.white,
                             value: isSelected,
                             onChanged: (value) {
-                              final notifier = ref.read(tempCountrySelectionProvider.notifier);
-                              final updated = List<String>.from(tempSelection);
-
-                              if (value == true) {
-                                updated.add(country.key);
-                              } else {
-                                updated.remove(country.key);
-                              }
-
-                              notifier.state = updated;
+                              setState(() {
+                                if (value == true) {
+                                  tempSelection.add(country.key);
+                                } else {
+                                  tempSelection.remove(country.key);
+                                }
+                              });
                             },
                           ),
                           title: Text(
@@ -100,17 +93,13 @@ class More extends ConsumerWidget {
             ),
             actions: [
               TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                onPressed: () => Navigator.pop(context),
                 child: Text('Cancel', style: theme.textTheme.titleSmall),
               ),
               TextButton(
                 onPressed: () {
-                  final tempSelection = ref.read(tempCountrySelectionProvider);
-
-                  ref.read(langAndCountryPrefProvider.notifier).saveCountries(tempSelection);
-
+                  ref.read(newsNotifierProvider.notifier).saveCountries(tempSelection);
+                  ref.read(newsNotifierProvider.notifier).fetchNewsByCountryAndLanguage();
                   Navigator.pop(context);
                 },
                 child: Text('Done', style: theme.textTheme.titleSmall),
@@ -124,9 +113,6 @@ class More extends ConsumerWidget {
     void showLanguageDialogue(BuildContext context, WidgetRef ref) {
       final theme = Theme.of(context);
 
-      final getValues = ref.watch(langAndCountryPrefProvider);
-      final getMethods = ref.read(langAndCountryPrefProvider.notifier);
-
       List<String> availableLanguages = ['en', 'bn', 'hi'];
       List<String> fullLangName = ['(English)', '(Bengali)', '(Hindi)'];
 
@@ -135,9 +121,8 @@ class More extends ConsumerWidget {
           availableLanguages[i]: fullLangName[i],
       };
 
-      List<String> currentSelection = getValues.languages;
-
-      ref.read(tempLanguageSelectionProvider.notifier).state = List.from(currentSelection);
+      final currentSelection = ref.watch(newsNotifierProvider).languages;
+      List<String> tempSelection = List.from(currentSelection);
 
       showDialog(
         context: context,
@@ -148,16 +133,14 @@ class More extends ConsumerWidget {
               style: theme.textTheme.titleLarge
                   ?.copyWith(color: theme.colorScheme.primary),
             ),
-            content: Consumer(
-              builder: (context, ref, _) {
-                final temp = ref.watch(tempLanguageSelectionProvider);
-
+            content: StatefulBuilder(
+              builder: (context, setState) {
                 return SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       ...languages.entries.map((lang) {
-                        final isSelected = temp.contains(lang.key);
+                        final isSelected = tempSelection.contains(lang.key);
 
                         return ListTile(
                           leading: Checkbox(
@@ -165,13 +148,13 @@ class More extends ConsumerWidget {
                             checkColor: Colors.white,
                             value: isSelected,
                             onChanged: (value) {
-                              final updated = List<String>.from(temp);
-                              if (value == true) {
-                                updated.add(lang.key);
-                              } else {
-                                updated.remove(lang.key);
-                              }
-                              ref.read(tempLanguageSelectionProvider.notifier).state = updated;
+                              setState(() {
+                                if (value == true) {
+                                  tempSelection.add(lang.key);
+                                } else {
+                                  tempSelection.remove(lang.key);
+                                }
+                              });
                             },
                           ),
                           title: Text(
@@ -187,15 +170,13 @@ class More extends ConsumerWidget {
             ),
             actions: [
               TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                onPressed: () => Navigator.pop(context),
                 child: Text('Cancel', style: theme.textTheme.titleSmall),
               ),
               TextButton(
                 onPressed: () {
-                  final finalSelection = ref.read(tempLanguageSelectionProvider);
-                  getMethods.saveLanguages(finalSelection);
+                  ref.read(newsNotifierProvider.notifier).saveLanguages(tempSelection);
+                  ref.read(newsNotifierProvider.notifier).fetchNewsByCountryAndLanguage();
                   Navigator.pop(context);
                 },
                 child: Text('Done', style: theme.textTheme.titleSmall),
@@ -205,7 +186,6 @@ class More extends ConsumerWidget {
         },
       );
     }
-
 
     return Scaffold(
       appBar: AppBar(
