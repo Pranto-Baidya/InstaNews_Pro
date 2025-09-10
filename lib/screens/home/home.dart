@@ -42,10 +42,9 @@ class _HomeState extends ConsumerState<Home> {
   @override
   void initState() {
     super.initState();
-    // Delay the initial fetch to ensure preferences are loaded
+
     Future.microtask(() {
       final newsNotifier = ref.read(newsNotifierProvider.notifier);
-      // Check if preferences are loaded before fetching
       Future.delayed(Duration(milliseconds: 500), () {
         if (mounted) {
           newsNotifier.fetchNewsByCountryAndLanguage();
