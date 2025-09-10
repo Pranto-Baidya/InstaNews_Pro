@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:instanews_pro/riverpod/news_riverpod/news_riverpod.dart';
+import 'package:instanews_pro/riverpod/speech_to_text_riverpod/speech_to_text_riverpod.dart';
 import 'package:instanews_pro/riverpod/theme_riverpod/theme_riverpod.dart';
 import 'package:instanews_pro/riverpod/weather_riverpod/weather_riverpod.dart';
 import 'package:instanews_pro/screens/explore/explore.dart';
@@ -41,11 +42,18 @@ class _HomeState extends ConsumerState<Home> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(newsNotifierProvider.notifier).fetchNewsByCountryAndLanguage();
-      ref.read(breakingNewsProvider.notifier).fetchCategory('top');
-      ref.read(worldNewsProvider.notifier).fetchCategory('world');
-      ref.read(weatherProvider.notifier).fetchCurrentWeather();
+    // Delay the initial fetch to ensure preferences are loaded
+    Future.microtask(() {
+      final newsNotifier = ref.read(newsNotifierProvider.notifier);
+      // Check if preferences are loaded before fetching
+      Future.delayed(Duration(milliseconds: 500), () {
+        if (mounted) {
+          newsNotifier.fetchNewsByCountryAndLanguage();
+          ref.read(breakingNewsProvider.notifier).fetchCategory('top');
+          ref.read(worldNewsProvider.notifier).fetchCategory('world');
+          ref.read(weatherProvider.notifier).fetchCurrentWeather();
+        }
+      });
     });
   }
 
@@ -386,13 +394,25 @@ class _HomeState extends ConsumerState<Home> {
   }
 
   Widget _buildSearchBar(ThemeData theme, WidgetRef ref) {
+    final speechState = ref.watch(speechStateProvider);
+    final speechNotifier = ref.read(speechStateProvider.notifier);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (speechState.isListening && speechState.recognizedWords.isNotEmpty) {
+        _searchController.text = speechState.recognizedWords;
+        _searchController.selection = TextSelection.fromPosition(
+          TextPosition(offset: speechState.recognizedWords.length),
+        );
+      }
+    });
+
     return Container(
-      width: double.infinity.w,
-      height: 60.h,
-      padding: EdgeInsets.symmetric(horizontal: 15.w),
+      width: double.infinity,
+      height: 60,
+      padding: const EdgeInsets.symmetric(horizontal: 15),
       decoration: BoxDecoration(
         color: theme.cardColor,
-        borderRadius: BorderRadius.circular(10.r),
+        borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -416,17 +436,25 @@ class _HomeState extends ConsumerState<Home> {
           controller: _searchController,
           cursorColor: theme.colorScheme.primary,
           decoration: InputDecoration(
-            hintText: 'Search for any news...',
+            hintText: speechState.isListening? 'Say something...' : 'Search for any news...',
             hintStyle: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w400,
             ),
             prefixIcon: Icon(Icons.search, color: theme.iconTheme.color),
+
             suffixIcon: IconButton(
-              onPressed: () {},
-              icon: Icon(Icons.keyboard_voice, color: theme.iconTheme.color),
+              onPressed: () {
+                if (speechState.isListening) {
+                  speechNotifier.stopListening();
+                } else {
+                  speechNotifier.startListening();
+                }
+              },
+              icon: speechState.isListening ? Icon(Icons.mic, color: theme.colorScheme.primary) : Icon(Icons.mic_off, color: theme.iconTheme.color)
             ),
           ),
-          onChanged: (value) {
+
+          onSubmitted: (value) {
             if (value.isEmpty) {
               ref.read(newsNotifierProvider.notifier).fetchNewsByCountryAndLanguage();
               ref.read(breakingNewsProvider.notifier).fetchCategory('top');
@@ -439,6 +467,8 @@ class _HomeState extends ConsumerState<Home> {
       ),
     );
   }
+
+
 
   Widget _buildNewsTitleRow(
     ThemeData theme,

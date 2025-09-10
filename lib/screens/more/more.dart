@@ -26,6 +26,29 @@ class More extends ConsumerWidget {
 
     final showWeather = ref.watch(showWeatherProvider);
 
+    void restartAppDialogue(BuildContext context){
+      final theme = Theme.of(context);
+      showDialog(
+          context: context,
+          builder: (BuildContext context){
+            return AlertDialog(
+              backgroundColor: theme.cardColor,
+              title: Text('Please Wait!',style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.primary),),
+              content: Text('Please Restart The App To See The New Contents Based On The Filter',style: theme.textTheme.titleMedium,),
+              actions: [
+                TextButton(
+                    onPressed: (){
+                      Navigator.pop(context);
+                    },
+                    child: Text('Ok',style: theme.textTheme.titleMedium,)
+                )
+              ],
+
+            );
+          }
+      );
+    }
+
     void showCountryDialogue(BuildContext context, WidgetRef ref) {
       final theme = Theme.of(context);
 
@@ -101,6 +124,7 @@ class More extends ConsumerWidget {
                   ref.read(newsNotifierProvider.notifier).saveCountries(tempSelection);
                   ref.read(newsNotifierProvider.notifier).fetchNewsByCountryAndLanguage();
                   Navigator.pop(context);
+                  restartAppDialogue(context);
                 },
                 child: Text('Done', style: theme.textTheme.titleSmall),
               ),
@@ -140,6 +164,7 @@ class More extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       ...languages.entries.map((lang) {
+
                         final isSelected = tempSelection.contains(lang.key);
 
                         return ListTile(
@@ -178,6 +203,7 @@ class More extends ConsumerWidget {
                   ref.read(newsNotifierProvider.notifier).saveLanguages(tempSelection);
                   ref.read(newsNotifierProvider.notifier).fetchNewsByCountryAndLanguage();
                   Navigator.pop(context);
+                  restartAppDialogue(context);
                 },
                 child: Text('Done', style: theme.textTheme.titleSmall),
               ),
@@ -186,6 +212,7 @@ class More extends ConsumerWidget {
         },
       );
     }
+
 
     return Scaffold(
       appBar: AppBar(
@@ -233,7 +260,7 @@ class More extends ConsumerWidget {
 
                 ]
             ),
-            SizedBox(height: 20.h),
+            SizedBox(height: 30.h),
             _sectionHeader(theme, Icons.tune, "General"),
             SizedBox(height: 20.h),
             _settingsCard(

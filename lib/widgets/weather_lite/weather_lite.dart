@@ -205,8 +205,10 @@ class WeatherLite extends StatelessWidget {
                                 : '',
                             style: theme.textTheme.titleSmall,
                           ),
-                          SizedBox(width: 15.w),
+                          SizedBox(width: 10.w),
                           AvatarGlow(
+                            repeat: false,
+                            duration: const Duration(seconds: 5),
                             glowRadiusFactor: 0.5,
                             glowColor: theme.colorScheme.primary,
                             glowCount: 2,
