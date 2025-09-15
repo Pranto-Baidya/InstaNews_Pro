@@ -7,6 +7,8 @@ import 'package:instanews_pro/riverpod/notifications_riverpod/notification_prefs
 import 'package:instanews_pro/riverpod/theme_riverpod/theme_riverpod.dart';
 import 'package:instanews_pro/utils/app_colors.dart';
 import 'package:instanews_pro/widgets/toast_msg/toast_msg.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../riverpod/news_riverpod/news_riverpod.dart';
 import '../../riverpod/show_weather_pref_riverpod/show_weather_pref_riverpod.dart';
@@ -219,6 +221,39 @@ class More extends ConsumerWidget {
       );
     }
 
+    void exitAppAlert(){
+      showDialog(
+          context: context,
+          builder: (BuildContext context){
+            return AlertDialog(
+              title: Text('Wait!',style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.primary),),
+              content: Text('Are you sure you want to exit from the app?',style: theme.textTheme.titleMedium,),
+              actions: [
+                TextButton(
+                    onPressed: (){
+                      Navigator.pop(context);
+                    },
+                    child: Text('Cancel',style: theme.textTheme.titleMedium,)
+                ),
+                TextButton(
+                    onPressed: (){
+                      SystemNavigator.pop();
+                    },
+                    child: Text('Exit',style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.primary),)
+                ),
+              ],
+            );
+          }
+      );
+    }
+
+    Future<void> launchGivenUrl(String url)async{
+      final uri = Uri.parse(url);
+      if(await canLaunchUrl(uri)){
+        await launchUrl(uri,mode: LaunchMode.externalApplication);
+      }
+    }
+
 
     return Scaffold(
       appBar: AppBar(
@@ -263,12 +298,12 @@ class More extends ConsumerWidget {
                     title: const Text('Read News By Language',),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   ),
-
                 ]
             ),
             SizedBox(height: 30.h),
             _sectionHeader(theme, Icons.tune, "General"),
             SizedBox(height: 20.h),
+
             _settingsCard(
               context,
               items: [
@@ -323,11 +358,8 @@ class More extends ConsumerWidget {
                   title: const Text("About Developer"),
                   leading: Icon(Icons.person_outline_outlined,color: theme.iconTheme.color,),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    ToastMsg.successToast(
-                      message: "Tapped About Developer",
-                      context: context,
-                    );
+                  onTap: () async{
+                   await launchGivenUrl('https://www.linkedin.com/in/prantobaidya/');
                   },
                 ),
                 ListTile(
@@ -335,33 +367,14 @@ class More extends ConsumerWidget {
                   leading: Icon(Icons.code,color: theme.iconTheme.color,),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () {
-                    ToastMsg.successToast(
-                      message: "Tapped Source Code",
-                      context: context,
-                    );
-                  },
-                ),
-                ListTile(
-                  title: const Text("Share App"),
-                  leading: Icon(Icons.share_outlined,color: theme.iconTheme.color,),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    ToastMsg.successToast(
-                      message: "Tapped Exit App",
-                      context: context,
-                    );
+                    launchGivenUrl('https://github.com/Pranto-Baidya/InstaNews_Pro');
                   },
                 ),
                 ListTile(
                   title: const Text("Exit App"),
                   leading: Icon(Icons.power_settings_new_outlined,color: theme.iconTheme.color,),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    ToastMsg.successToast(
-                      message: "Tapped Exit App",
-                      context: context,
-                    );
-                  },
+                  onTap: exitAppAlert
                 ),
                 
               ],

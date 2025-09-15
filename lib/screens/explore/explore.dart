@@ -4,8 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:instanews_pro/news_models/db_bookmark_model/bookmark_model.dart';
+import 'package:instanews_pro/riverpod/internet_riverpod/internet_riverpod.dart';
 import 'package:instanews_pro/riverpod/news_riverpod/news_riverpod.dart';
 import 'package:instanews_pro/riverpod/theme_riverpod/theme_riverpod.dart';
+import 'package:instanews_pro/screens/all_news/all_news.dart';
 import 'package:instanews_pro/widgets/news_details_screen/news_details.dart';
 import 'package:instanews_pro/widgets/news_webview/news_webview.dart';
 import 'package:instanews_pro/widgets/shimmer_effects/shimmer_listview.dart';
@@ -41,6 +43,7 @@ class _ExploreNewsState extends ConsumerState<ExploreNews> {
 
   @override
   Widget build(BuildContext context) {
+
     var theme = Theme.of(context);
     int selectedIndex = ref.watch(exploreTabIndexProvider);
 
@@ -53,6 +56,8 @@ class _ExploreNewsState extends ConsumerState<ExploreNews> {
 
     final categoryState = ref.watch(newsNotifierProvider);
     final categoryNotifier = ref.read(newsNotifierProvider.notifier);
+
+    final checkInternet = ref.watch(internetProvider);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -72,7 +77,34 @@ class _ExploreNewsState extends ConsumerState<ExploreNews> {
           isDark ? const Color(0xFF121212) : const Color(0xFFFFFFFF),
         ),
       ),
-      body: Column(
+      body: !checkInternet.isConnected?
+      Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20.w),
+        child: Column(
+          children: [
+            SizedBox(height: 100.h,),
+            Center(child: Image.asset('assets/internet.png',fit: BoxFit.cover,width: 250.w,height: 250.h,)),
+            SizedBox(height: 15.h,),
+            Text('No Internet Connection',style: theme.textTheme.titleMedium,),
+            SizedBox(height: 10.h,),
+            Text('Please check your wifi and try again' ,style: theme.textTheme.titleMedium,),
+            SizedBox(height: 20.h,),
+            ElevatedButton(
+                onPressed: (){
+                  ref.read(countProvider.notifier).state = 2;
+                },
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.colorScheme.primary,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+                    elevation: 0,
+                    surfaceTintColor: Colors.transparent,
+                    minimumSize: Size(100.w, 45.h)
+                ),
+                child: Text('View Bookmarks',style: theme.textTheme.titleMedium?.copyWith(color: Colors.white),)
+            )
+          ],
+        ),
+      ):Column(
         children: [
           SizedBox(height: 10.h),
           ExploreNewsTabBar(
@@ -101,7 +133,14 @@ class _ExploreNewsState extends ConsumerState<ExploreNews> {
                            return Center(child: Text("Exception : Failed to fetch data",style: TextStyle(color: Colors.red,fontSize: 18),),);
                          }
                          else if(newsState.articles.isEmpty){
-                           return Center(child: Text('Oops no news data to show',style: TextStyle(color: Colors.red,fontSize: 18),),);
+                           return Column(
+                             mainAxisAlignment: MainAxisAlignment.center,
+                             children: [
+                               Center(child: Image.asset('assets/empty.png',fit: BoxFit.cover,width: 250.w,height: 250.h,)),
+                               SizedBox(height: 15.h,),
+                               Center(child: Text('Oops! No news to show',style: theme.textTheme.titleMedium,)),
+                             ],
+                           );
                          }
                            return NotificationListener<ScrollNotification>(
                              onNotification: (scrollInfo){
@@ -193,6 +232,16 @@ class _ExploreNewsState extends ConsumerState<ExploreNews> {
                               itemBuilder: (context,index){
                                 return ShimmerListview();
                               }
+                          );
+                        }
+                        if(categoryState.articles.isEmpty){
+                          return Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Center(child: Image.asset('assets/empty.png',fit: BoxFit.cover,width: 250.w,height: 250.h,)),
+                              SizedBox(height: 15.h,),
+                              Center(child: Text('Oops! No news to show',style: theme.textTheme.titleMedium,)),
+                            ],
                           );
                         }
                         return NotificationListener<ScrollNotification>(

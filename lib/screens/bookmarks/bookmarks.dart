@@ -60,14 +60,15 @@ class _BookmarksState extends ConsumerState<Bookmarks> {
   void readLater(BookmarkModel bookmark)async{
 
     final theme = Theme.of(context);
-    final selectedDate = ref.watch(reminderDate);
-    final selectedTime = ref.watch(reminderTime);
 
     showDialog(
         context: context,
         builder: (BuildContext context){
           return Consumer(
               builder: (context,ref, _){
+                final selectedDate = ref.watch(reminderDate);
+                final selectedTime = ref.watch(reminderTime);
+
                 final isSelectedDate = ref.watch(isReminderDateSet);
                 final isSelectedTime = ref.watch(isReminderTimeSet);
 
@@ -126,8 +127,8 @@ class _BookmarksState extends ConsumerState<Bookmarks> {
                           )
                         ],
                       ),
-                      isSelectedDate?SizedBox(height: 10.h,):SizedBox.shrink(),
-                      isSelectedDate? Row(
+                      isSelectedTime?SizedBox(height: 10.h,):SizedBox.shrink(),
+                      isSelectedTime? Row(
                         children: [
                           Text('Selected time is : ',style: theme.textTheme.titleMedium,),
                           SizedBox(width: 5.w,),
@@ -147,8 +148,8 @@ class _BookmarksState extends ConsumerState<Bookmarks> {
                         onPressed: (){
                           NotificationService.showNotificationAt(
                               id: bookmark.id.hashCode.abs(),
-                              title: 'InstaNews Pro News Reminder',
-                              description: 'You set up a reminder for \n${bookmark.title}',
+                              title: '🔔 News Reminder',
+                              description: bookmark.title,
                               date: ref.read(reminderDate),
                               time: ref.read(reminderTime)
                           );
@@ -218,70 +219,83 @@ class _BookmarksState extends ConsumerState<Bookmarks> {
               ),
               SizedBox(height: 10.h,),
             ],
-
           Expanded(
-             child: ListView.builder(
-                 physics: ClampingScrollPhysics(),
-                 shrinkWrap: true,
-                 itemCount: displayResult.length,
-                 itemBuilder: (context,index){
-                   final data = displayResult[index];
-                   final bookmarkModel = BookmarkModel(
-                       id: data.id,
-                       title: data.title,
-                       description: data.description,
-                       imageUrl: data.imageUrl,
-                       categories: data.categories,
-                       countries: data.countries,
-                       newsUrl: data.newsUrl,
-                       newsSource: data.newsSource,
-                       sourceIcon: data.sourceIcon,
-                       dateTime: data.dateTime
-                   );
-                   return AnimatedContainerWidget(
-                     index: index,
-                     offset: Offset(0, 0.5),
-                     child: BookmarkWidget(
-                         theme: theme,
-                         imageUrl: data.imageUrl,
-                         title: data.title,
-                         chipTitle: data.categories.take(1).map((i)=>i.toUpperCase()).join(''),
-                         onBookmark: (){
-                           toggleBookmark(data);
-                           ToastMsg.errorToast(message: 'Removed From Bookmark', context: context);
-                         },
-                         onReadLater: (){
-                           readLater(bookmarkModel);
-                         },
-                         isMarked: true,
-                         onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=>
-                              NewsDetailPage(
-                                  tag: data.id,
-                                  imageUrl: data.imageUrl,
-                                  category: data.categories.take(1).map((i)=>i.toUpperCase()).join(''),
-                                  title: data.title,
-                                  source: data.newsSource,
-                                  content: data.description,
-                                  sourceIcon: data.sourceIcon,
-                                  dateTime: data.dateTime!,
-                                  model: bookmarkModel,
-                                  onShare: (){
-                                    SharePlus.instance.share(
-                                      ShareParams(
-                                        uri: Uri.parse(data.newsUrl)
-                                      )
-                                    );
-                                  },
-                                  onReadLater: (){
+             child: Builder(
+                 builder: (context){
+                   if(displayResult.isEmpty){
+                     return Column(
+                       mainAxisAlignment: MainAxisAlignment.center,
+                       children: [
+                         Center(child: Image.asset('assets/empty.png',fit: BoxFit.cover,width: 250.w,height: 250.h,)),
+                         SizedBox(height: 15.h,),
+                         Center(child: Text('Oops! No bookmarks found',style: theme.textTheme.titleMedium,)),
+                       ],
+                     );
+                   }
+                   return ListView.builder(
+                       physics: ClampingScrollPhysics(),
+                       shrinkWrap: true,
+                       itemCount: displayResult.length,
+                       itemBuilder: (context,index){
+                         final data = displayResult[index];
+                         final bookmarkModel = BookmarkModel(
+                             id: data.id,
+                             title: data.title,
+                             description: data.description,
+                             imageUrl: data.imageUrl,
+                             categories: data.categories,
+                             countries: data.countries,
+                             newsUrl: data.newsUrl,
+                             newsSource: data.newsSource,
+                             sourceIcon: data.sourceIcon,
+                             dateTime: data.dateTime
+                         );
+                         return AnimatedContainerWidget(
+                           index: index,
+                           offset: Offset(0, 0.5),
+                           child: BookmarkWidget(
+                             theme: theme,
+                             imageUrl: data.imageUrl,
+                             title: data.title,
+                             chipTitle: data.categories.take(1).map((i)=>i.toUpperCase()).join(''),
+                             onBookmark: (){
+                               toggleBookmark(data);
+                               ToastMsg.errorToast(message: 'Removed From Bookmark', context: context);
+                             },
+                             onReadLater: (){
+                               readLater(bookmarkModel);
+                             },
+                             isMarked: true,
+                             onPressed: () {
+                               Navigator.push(context, MaterialPageRoute(builder: (context)=>
+                                   NewsDetailPage(
+                                       tag: data.id,
+                                       imageUrl: data.imageUrl,
+                                       category: data.categories.take(1).map((i)=>i.toUpperCase()).join(''),
+                                       title: data.title,
+                                       source: data.newsSource,
+                                       content: data.description,
+                                       sourceIcon: data.sourceIcon,
+                                       dateTime: data.dateTime!,
+                                       model: bookmarkModel,
+                                       onShare: (){
+                                         SharePlus.instance.share(
+                                             ShareParams(
+                                                 uri: Uri.parse(data.newsUrl)
+                                             )
+                                         );
+                                       },
+                                       onReadLater: (){
 
-                                  },
-                                  onReadMore: (){
-                                    Navigator.push(context, MaterialPageRoute(builder: (context)=>NewsWebview(newsUrl: data.newsUrl)));
-                                  }
-                              )));
-                         },
-                     ),
+                                       },
+                                       onReadMore: (){
+                                         Navigator.push(context, MaterialPageRoute(builder: (context)=>NewsWebview(newsUrl: data.newsUrl)));
+                                       }
+                                   )));
+                             },
+                           ),
+                         );
+                       }
                    );
                  }
              )

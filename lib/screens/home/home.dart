@@ -5,14 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:instanews_pro/riverpod/internet_riverpod/internet_riverpod.dart';
 import 'package:instanews_pro/riverpod/news_riverpod/news_riverpod.dart';
 import 'package:instanews_pro/riverpod/speech_to_text_riverpod/speech_to_text_riverpod.dart';
 import 'package:instanews_pro/riverpod/theme_riverpod/theme_riverpod.dart';
 import 'package:instanews_pro/riverpod/weather_riverpod/weather_riverpod.dart';
 import 'package:instanews_pro/screens/explore/explore.dart';
+import 'package:instanews_pro/widgets/app_button/app_button.dart';
 import 'package:instanews_pro/widgets/app_loader/app_loader.dart';
 import 'package:instanews_pro/widgets/news_webview/news_webview.dart';
 import 'package:instanews_pro/widgets/shimmer_effects/shimmer_listview.dart';
+import 'package:instanews_pro/widgets/toast_msg/toast_msg.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -64,8 +67,19 @@ class _HomeState extends ConsumerState<Home> {
   }
 
 
+
+
   @override
   Widget build(BuildContext context) {
+
+    ref.listen<InternetState>(internetProvider, (prev,next){
+      if(next.isConnected){
+        ToastMsg.successToast(message: 'Internet Connection Restored', context: context,alignment: Alignment.bottomCenter);
+      }
+      else{
+        ToastMsg.errorToast(message: 'No Internet Connection', context: context, alignment: Alignment.bottomCenter);
+      }
+      });
 
     var theme = Theme.of(context);
     final index = ref.watch(indexProvider);
@@ -76,6 +90,8 @@ class _HomeState extends ConsumerState<Home> {
 
     final breakingNews = ref.watch(breakingNewsProvider);
     final worldNews = ref.watch(worldNewsProvider);
+
+    final checkInternet = ref.watch(internetProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -127,7 +143,7 @@ class _HomeState extends ConsumerState<Home> {
             Padding(
               padding: const EdgeInsets.only(right: 5),
               child: Visibility(
-                visible: showWeather,
+                visible: checkInternet.isConnected? showWeather : false,
                 replacement: SizedBox.shrink(),
                 child: WeatherLite(theme: theme, weatherState: weatherState),
               ),
@@ -135,7 +151,35 @@ class _HomeState extends ConsumerState<Home> {
           ],
         ),
       ),
-      body: RefreshIndicator(
+      body: !checkInternet.isConnected?
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Column(
+              children: [
+                SizedBox(height: 100.h,),
+                Center(child: Image.asset('assets/internet.png',fit: BoxFit.cover,width: 250.w,height: 250.h,)),
+                SizedBox(height: 15.h,),
+                Text('No Internet Connection',style: theme.textTheme.titleMedium,),
+                SizedBox(height: 10.h,),
+                Text('Please check your wifi and try again' ,style: theme.textTheme.titleMedium,),
+                SizedBox(height: 20.h,),
+                ElevatedButton(
+                    onPressed: (){
+                      ref.read(countProvider.notifier).state=2;
+                    }, 
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.colorScheme.primary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+                      elevation: 0,
+                      surfaceTintColor: Colors.transparent,
+                      minimumSize: Size(100.w, 45.h)
+                    ),
+                    child: Text('View Bookmarks',style: theme.textTheme.titleMedium?.copyWith(color: Colors.white),)
+                )
+              ],
+            ),
+          )
+          :RefreshIndicator(
         onRefresh: ()async{
           ref.read(newsNotifierProvider.notifier).fetchNewsByCountryAndLanguage();
           ref.read(breakingNewsProvider.notifier).fetchCategory('top');
@@ -163,7 +207,14 @@ class _HomeState extends ConsumerState<Home> {
                             },
                           );
                         } else if (newsState.articles.isEmpty) {
-                          return Center(child: Text('No news to show'));
+                          return Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Center(child: Image.asset('assets/empty.png',fit: BoxFit.cover,width: 250.w,height: 250.h,)),
+                              SizedBox(height: 15.h,),
+                              Center(child: Text('Oops! No news found',style: theme.textTheme.titleMedium,)),
+                            ],
+                          );
                         } else if (newsState.error != null) {
                           return Center(child: Text('Something went wrong'));
                         }

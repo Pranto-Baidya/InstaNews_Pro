@@ -43,7 +43,7 @@ class _AllNewsState extends ConsumerState<AllNews> {
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           border: Border(
-            top: BorderSide(color: Colors.grey.shade300,width: 0.5)
+            top: BorderSide(color: isDark? Colors.grey.shade800 :Colors.grey.shade300,width: 0.5)
           )
         ),
         child: NavigationBar(

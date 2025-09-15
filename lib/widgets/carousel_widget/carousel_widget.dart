@@ -109,7 +109,7 @@ class CarouselWidget extends StatelessWidget {
                               ],
                             ),
                             SizedBox(height: 5.h,),
-                            Text('${article.dateTime != null ? DateFormat('dd/MM/yyyy hh:mm a').format(article.dateTime!): 'Unknown'}',
+                            Text('${article.dateTime != null ? DateFormat('dd/MM/yyyy, hh:mm a').format(article.dateTime!): 'Unknown'}',
                               style: theme.textTheme.titleSmall?.copyWith(color: Colors.white),
                             ),
                             SizedBox(height: 5.h,),
