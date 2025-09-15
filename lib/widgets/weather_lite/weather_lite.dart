@@ -3,8 +3,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:intl/intl.dart';
-
 import '../../riverpod/weather_riverpod/weather_riverpod.dart';
 import '../app_loader/app_loader.dart';
 import '../app_title/app_title.dart';
@@ -36,7 +34,7 @@ class WeatherLite extends StatelessWidget {
                     return SingleChildScrollView(
                       child: Container(
                         width: double.infinity.w,
-                        height: 600.h,
+                        height: 650.h,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
@@ -75,99 +73,7 @@ class WeatherLite extends StatelessWidget {
                             SizedBox(height: 20.h),
                             Padding(
                               padding: EdgeInsets.symmetric(horizontal: 20.w),
-                              child: Container(
-                                width: double.infinity.w,
-                                height: 220.h,
-                                decoration: BoxDecoration(
-                                  color: theme.cardColor,
-                                  borderRadius: BorderRadius.circular(12.r),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.05),
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.02),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.07),
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 6),
-                                    ),
-                                  ],
-                                ),
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 15.w,
-                                    vertical: 10.h,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            weatherState.weather != null
-                                                ? '${weatherState.weather!.tempC.toStringAsFixed(0)} °'
-                                                : '',
-                                            style: theme.textTheme.displaySmall
-                                                ?.copyWith(color: Colors.red),
-                                          ),
-                                          Spacer(),
-                                          CachedNetworkImage(
-                                            imageUrl:
-                                                weatherState.weather != null
-                                                ? weatherState.weather!.icon
-                                                : '',
-                                            fit: BoxFit.cover,
-                                            width: 80.w,
-                                            height: 80.h,
-                                          ),
-                                        ],
-                                      ),
-                                      Wrap(
-                                        children: [
-                                          Text(
-                                            weatherState.weather != null
-                                                ? weatherState
-                                                      .weather!
-                                                      .condition
-                                                : '',
-                                            style: theme.textTheme.titleMedium,
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(height: 30.h),
-                                      Text(
-                                        'Today',
-                                        style: theme.textTheme.titleMedium,
-                                      ),
-                                      SizedBox(height: 10.h),
-                                      Row(
-                                        children: [
-                                          Text(
-                                            '${DateFormat('dd/MM/yyyy, hh:mm a').format(DateTime.now())}',
-                                            style: theme.textTheme.titleSmall,
-                                          ),
-                                          Spacer(),
-                                          Text(
-                                            weatherState.weather != null
-                                                ? '${weatherState.weather!.name}, ${weatherState.weather!.country}'
-                                                : '',
-                                            style: theme.textTheme.titleSmall,
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                              child: buildTodayWeatherListView(),
                             ),
                             SizedBox(height: 30.h),
                             Padding(
@@ -219,6 +125,7 @@ class WeatherLite extends StatelessWidget {
                               fit: BoxFit.cover,
                               width: 30.w,
                               height: 30.h,
+                              filterQuality: FilterQuality.high,
                             ),
                           ),
                         ],
@@ -228,6 +135,101 @@ class WeatherLite extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
+
+  Widget buildTodayWeatherListView() {
+    return ListView.builder(
+      itemCount: 1,
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+        return Container(
+          width: double.infinity.w,
+          decoration: BoxDecoration(
+            color: theme.cardColor,
+            borderRadius: BorderRadius.circular(12.r),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+              BoxShadow(
+                color: Colors.black.withOpacity(0.07),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      weatherState.weather != null
+                          ? '${weatherState.weather!.tempC.toStringAsFixed(0)} °'
+                          : '',
+                      style: theme.textTheme.displayMedium?.copyWith(
+                        color: Colors.red,
+                      ),
+                    ),
+                    Spacer(),
+                    CachedNetworkImage(
+                      imageUrl: weatherState.weather != null
+                          ? weatherState.weather!.icon
+                          : '',
+                      fit: BoxFit.cover,
+                      width: 80.w,
+                      height: 80.h,
+                    ),
+                  ],
+                ),
+                Wrap(
+                  children: [
+                    Text(
+                      weatherState.weather != null
+                          ? weatherState.weather!.condition
+                          : '',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20.h),
+                Text('Today', style: theme.textTheme.titleMedium),
+                SizedBox(height: 10.h),
+                Text(
+                  weatherState.weather != null
+                      ? 'Last Updated At : ${weatherState.weather!.lastUpdatedAt}'
+                      : '',
+                  style: theme.textTheme.titleMedium,
+                ),
+                SizedBox(height: 10.h),
+                Text(
+                  weatherState.weather != null
+                      ? '${weatherState.weather!.name}, ${weatherState.weather!.country}'
+                      : '',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+                SizedBox(height: 10.h),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -268,37 +270,54 @@ class WeatherLite extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(data.date),
-                    SizedBox(width: 20.w),
                     CachedNetworkImage(
                       imageUrl: data.icon,
                       fit: BoxFit.cover,
-                      width: 50.w,
-                      height: 50.h,
+                      width: 60.w,
+                      height: 60.h,
                     ),
-                    SizedBox(width: 10.w),
-                    Flexible(child: Text(data.condition)),
+                    Flex(
+                      direction: Axis.vertical,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                       Padding(
+                         padding: const EdgeInsets.only(right: 10),
+                         child: Flexible(
+                            child: Text(
+                              data.condition,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                          ),
+                       ),
+                      ],
+                    ),
                   ],
                 ),
-                SizedBox(height: 10.h),
+                SizedBox(height: 20.h),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10.w),
-                  child: Text('Precip : ${data.totalPrecip} %'),
+                  child: Text('Date :  ${data.date}'),
                 ),
                 SizedBox(height: 10.h),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10.w),
-                  child: Text('Chances of rain : ${data.dailyChanceOfRain}%'),
+                  child: Text('Precip :  ${data.totalPrecip} %'),
+                ),
+                SizedBox(height: 10.h),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10.w),
+                  child: Text('Chances Of Rain :  ${data.dailyChanceOfRain}%'),
                 ),
                 SizedBox(height: 10.h),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10.w),
                   child: Text(
-                    'Max/Min temperature : ${data.maxTemp}° / ${data.minTemp}°C',
+                    'Max / Min Temperature :  ${data.maxTemp} °C / ${data.minTemp} °C',
                   ),
                 ),
                 SizedBox(height: 20.h),

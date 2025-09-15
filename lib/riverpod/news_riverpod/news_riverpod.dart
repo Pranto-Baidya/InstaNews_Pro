@@ -3,8 +3,9 @@ import 'package:instanews_pro/api_service/api_service.dart';
 import 'package:instanews_pro/news_models/article_model/article_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-final newsNotifierProvider =
-StateNotifierProvider<NewsNotifier, NewsState>((ref) => NewsNotifier());
+final newsNotifierProvider = StateNotifierProvider<NewsNotifier, NewsState>(
+  (ref) => NewsNotifier(),
+);
 
 class NewsState {
   final List<ArticleModel> articles;
@@ -69,8 +70,8 @@ class NewsNotifier extends StateNotifier<NewsState> {
     final savedLanguages = prefs.getStringList('languages') ?? [];
 
     state = state.copyWith(
-        countries: savedCountries,
-        languages: savedLanguages
+      countries: savedCountries,
+      languages: savedLanguages,
     );
 
     if (savedCountries.isNotEmpty || savedLanguages.isNotEmpty) {

@@ -7,7 +7,9 @@ import 'package:instanews_pro/riverpod/theme_riverpod/theme_riverpod.dart';
 import 'package:instanews_pro/screens/onboarding/onboarding_screen.dart';
 import 'package:instanews_pro/utils/app_colors.dart';
 
+import '../../riverpod/onboarding_pref_riverpod/onboarding_pref_riverpod.dart';
 import '../../widgets/app_title/app_title.dart';
+import '../all_news/all_news.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -22,10 +24,27 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_){
       Future.delayed(Duration(seconds: 3)).then((_){
-        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context)=>OnboardingScreen()), (Route<dynamic>route)=>false);
+        _checkPrefs();
       });
     });
     super.initState();
+  }
+
+  Future<void> _checkPrefs() async {
+    await ref.read(onboardingProvider.notifier).loadPref();
+    final shown = ref.watch(onboardingProvider);
+
+    if (shown) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AllNews()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+      );
+    }
   }
   
   
@@ -50,11 +69,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AppTitle(
-              width: 45.w,
+              width: 50.w,
               theme: theme,
               textStyleFirst: theme.textTheme.displaySmall!,
               textStyleSecond: theme.textTheme.displaySmall!.copyWith(color: theme.colorScheme.primary),),
-            SizedBox(height: 10.h,),
+            SizedBox(height: 20.h,),
             Text('News From Around The World For You',style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w400),)
           ],
         ),

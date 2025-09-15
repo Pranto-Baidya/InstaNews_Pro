@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:instanews_pro/news_models/db_bookmark_model/bookmark_model.dart';
 import 'package:instanews_pro/riverpod/news_riverpod/news_riverpod.dart';
 import 'package:instanews_pro/riverpod/theme_riverpod/theme_riverpod.dart';
 import 'package:instanews_pro/widgets/news_details_screen/news_details.dart';
+import 'package:instanews_pro/widgets/news_webview/news_webview.dart';
 import 'package:instanews_pro/widgets/shimmer_effects/shimmer_listview.dart';
 import 'package:instanews_pro/widgets/short_news_tile/short_news_tile.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../widgets/app_loader/app_loader.dart';
 
@@ -31,7 +34,7 @@ class _ExploreNewsState extends ConsumerState<ExploreNews> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(exploreTabIndexProvider.notifier).state = widget.initialIndex;
-      ref.read(newsNotifierProvider.notifier).fetchNewsByCountryAndLanguage();
+        ref.read(newsNotifierProvider.notifier).fetchNewsByCountryAndLanguage();
     });
 
   }
@@ -77,35 +80,7 @@ class _ExploreNewsState extends ConsumerState<ExploreNews> {
             ref: ref,
             selectedIndex: selectedIndex,
           ),
-          FutureBuilder(
-            future: Future.delayed(Duration(seconds: 5)),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 25, top: 15),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Icon(Icons.info_outline,color: Colors.red,size: 20,),
-                      SizedBox(width: 5.w,),
-                      Text(
-                        'Swipe left for more categories',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          color: Colors.red,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              } else {
-                return SizedBox.shrink();
-              }
-            },
-          ),
-
-          SizedBox(height: 20.h),
-
+          SizedBox(height: 15.h),
           selectedIndex==0?
            Expanded(
                child: RefreshIndicator(
@@ -136,13 +111,24 @@ class _ExploreNewsState extends ConsumerState<ExploreNews> {
                                return false;
                              },
                                child: ListView.builder(
-                                   physics: BouncingScrollPhysics(),
+                                   physics: ClampingScrollPhysics(),
                                    shrinkWrap: true,
                                    itemCount: newsState.articles.length+1,
                                    itemBuilder: (context,index){
                                      if(index < newsState.articles.length) {
-                                       final articles = newsState
-                                           .articles[index];
+                                       final articles = newsState.articles[index];
+                                       final bookmarkModel = BookmarkModel(
+                                           id: articles.id,
+                                           title: articles.title,
+                                           description: articles.description,
+                                           imageUrl: articles.imageUrl,
+                                           categories: articles.categories,
+                                           countries: articles.country,
+                                           newsUrl: articles.newsUrl,
+                                           newsSource: articles.sourceName,
+                                           sourceIcon: articles.sourceIcon,
+                                           dateTime: articles.dateTime
+                                       );
                                        return ShortNewsTile(
                                          index: index,
                                          theme: theme,
@@ -162,10 +148,19 @@ class _ExploreNewsState extends ConsumerState<ExploreNews> {
                                                source: articles.sourceName,
                                                content: articles.description,
                                                sourceIcon: articles.sourceIcon,
-                                               onBookmark: () {},
-                                               onShare: () {},
+                                               model: bookmarkModel,
+                                               dateTime: articles.dateTime!,
+                                               onShare: () {
+                                                 SharePlus.instance.share(
+                                                   ShareParams(
+                                                     uri: Uri.parse(articles.newsUrl)
+                                                   )
+                                                 );
+                                               },
                                                onReadLater: () {},
-                                               onReadMore: () {},
+                                               onReadMore: () {
+                                                 Navigator.push(context, MaterialPageRoute(builder: (context)=>NewsWebview(newsUrl: articles.newsUrl)));
+                                               },
                                              ),
                                            ));
                                          },
@@ -208,12 +203,24 @@ class _ExploreNewsState extends ConsumerState<ExploreNews> {
                              return false;
                           },
                             child: ListView.builder(
-                                physics: BouncingScrollPhysics(),
+                                physics: ClampingScrollPhysics(),
                                 shrinkWrap: true,
                                 itemCount: categoryState.articles.length + 1,
                                 itemBuilder: (context,index){
                                   if(index<categoryState.articles.length){
                                     final article = categoryState.articles[index];
+                                    final bookmarkModel = BookmarkModel(
+                                        id: article.id,
+                                        title: article.title,
+                                        description: article.description,
+                                        imageUrl: article.imageUrl,
+                                        categories: article.categories,
+                                        countries: article.country,
+                                        newsUrl: article.newsUrl,
+                                        newsSource: article.sourceName,
+                                        sourceIcon: article.sourceIcon,
+                                        dateTime: article.dateTime
+                                    );
                                     return ShortNewsTile(
                                         index: index,
                                         theme: theme,
@@ -230,10 +237,19 @@ class _ExploreNewsState extends ConsumerState<ExploreNews> {
                                                   source: article.sourceName,
                                                   content: article.description,
                                                   sourceIcon: article.sourceIcon,
-                                                  onBookmark: (){},
-                                                  onShare: (){},
+                                                  model: bookmarkModel ,
+                                                  dateTime: article.dateTime!,
+                                                  onShare: (){
+                                                    SharePlus.instance.share(
+                                                      ShareParams(
+                                                        uri: Uri.parse(article.newsUrl)
+                                                      )
+                                                    );
+                                                  },
                                                   onReadLater: (){},
-                                                  onReadMore: (){}
+                                                  onReadMore: (){
+                                                    Navigator.push(context, MaterialPageRoute(builder: (context)=>NewsWebview(newsUrl: article.newsUrl)));
+                                                  }
                                               )));
                                         },
 
@@ -336,6 +352,7 @@ class ExploreNewsTabBar extends StatelessWidget {
                         ref.read(newsNotifierProvider.notifier).fetchCategory(words);
                       } else {
                         ref.read(selectedCategory.notifier).state = '';
+                        ref.read(newsNotifierProvider.notifier).fetchNewsByCountryAndLanguage();
                       }
                     },
 

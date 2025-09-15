@@ -1,8 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:instanews_pro/news_models/db_bookmark_model/bookmark_model.dart';
+import 'package:instanews_pro/riverpod/db_riverpod/db_riverpod.dart';
+import 'package:instanews_pro/widgets/toast_msg/toast_msg.dart';
 
-class NewsDetailPage extends StatelessWidget {
+class NewsDetailPage extends ConsumerWidget {
   final String tag;
   final String imageUrl;
   final String category;
@@ -10,10 +14,11 @@ class NewsDetailPage extends StatelessWidget {
   final String source;
   final String content;
   final String? sourceIcon;
-  final VoidCallback onBookmark;
+  final BookmarkModel model;
   final VoidCallback onShare;
   final VoidCallback onReadLater;
   final VoidCallback onReadMore;
+  final DateTime dateTime;
 
   const NewsDetailPage({
     super.key,
@@ -24,15 +29,20 @@ class NewsDetailPage extends StatelessWidget {
     required this.source,
     required this.content,
     required this.sourceIcon,
-    required this.onBookmark,
+    required this.model,
     required this.onShare,
     required this.onReadLater,
     required this.onReadMore,
+    required this.dateTime
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     var theme = Theme.of(context);
+
+    final bookmarkState = ref.watch(bookmarkProvider);
+    final isBookmarked = bookmarkState.bookmarks.any((b) => b.id == model.id);
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: Column(
@@ -71,10 +81,10 @@ class NewsDetailPage extends StatelessWidget {
                       child: CircleAvatar(
                         backgroundColor: Colors.black54,
                         child: IconButton(
-                          onPressed: (){
+                          onPressed: () {
                             Navigator.pop(context);
                           },
-                          icon: Icon(Icons.arrow_back, color: Colors.white),
+                          icon: const Icon(Icons.arrow_back, color: Colors.white),
                         ),
                       ),
                     ),
@@ -93,7 +103,7 @@ class NewsDetailPage extends StatelessWidget {
                             ),
                             child: Text(
                               category,
-                              style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                              style: TextStyle(color: Colors.white, fontSize: 14),
                             ),
                           ),
                           SizedBox(height: 8.h),
@@ -101,10 +111,11 @@ class NewsDetailPage extends StatelessWidget {
                             title,
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 20.sp,
+                              fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+
                         ],
                       ),
                     ),
@@ -116,7 +127,7 @@ class NewsDetailPage extends StatelessWidget {
                   left: 0,
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
-                    physics: BouncingScrollPhysics(),
+                    physics: const BouncingScrollPhysics(),
                     child: Container(
                       height: MediaQuery.of(context).size.height,
                       padding: EdgeInsets.all(16.w),
@@ -124,69 +135,79 @@ class NewsDetailPage extends StatelessWidget {
                         color: theme.cardColor,
                         borderRadius: BorderRadius.circular(20.r),
                       ),
-                      child: Stack(
-                        children: [
-                          Padding(
-                            padding:  EdgeInsets.symmetric(horizontal: 10.w),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: 20.h),
+                            Wrap(
+                              crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
-                                SizedBox(height: 20.h,),
-                                Row(
-                                  children: [
-                                    CircleAvatar(
-                                      backgroundImage: sourceIcon!=null? NetworkImage(sourceIcon!) : NetworkImage('https://www.svgrepo.com/show/508699/landscape-placeholder.svg'),
-                                      radius: 18.r,
-                                    ),
-                                    SizedBox(width: 8.w),
-                                    Text(
-                                      source,
-                                      style: theme.textTheme.titleMedium,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    SizedBox(width: 5.w),
-                                    Icon(Icons.verified, color: theme.colorScheme.primary, size: 18.sp),
-                                  ],
+                                CircleAvatar(
+                                  backgroundImage: sourceIcon != null
+                                      ? NetworkImage(sourceIcon!)
+                                      : const NetworkImage('https://www.svgrepo.com/show/508699/landscape-placeholder.svg'),
+                                  radius: 18.r,
                                 ),
-                                SizedBox(height: 12.h),
+                                SizedBox(width: 8.w),
                                 Text(
-                                  content,
+                                  source,
                                   style: theme.textTheme.titleMedium,
-                                  maxLines: 10,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                TextButton(
-                                  onPressed: onReadMore,
-                                  style: TextButton.styleFrom(
-                                    padding: EdgeInsets.zero,
-                                  ),
-                                  child: Text(
-                                    'Read Full Article Here',
-                                    style: theme.textTheme.titleMedium?.copyWith(
-                                      color: theme.colorScheme.primary,
-                                      decoration: TextDecoration.underline,
-                                      decorationColor: theme.colorScheme.primary,
-                                    ),
-                                  ),
-                                ),
+                                SizedBox(width: 5.w),
+                                Icon(Icons.verified, color: theme.colorScheme.primary, size: 18.sp),
                               ],
                             ),
-                          ),
-
-                        ],
-
+                            SizedBox(height: 12.h),
+                            Text(
+                              content,
+                              style: theme.textTheme.titleMedium,
+                              maxLines: 10,
+                            ),
+                            TextButton(
+                              onPressed: onReadMore,
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                              ),
+                              child: Text(
+                                'Read Full Article Here',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  color: theme.colorScheme.primary,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: theme.colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
+
                 Positioned(
                   top: 330.h,
-                  right: 134.w,
+                  right: 82.w,
                   child: CircleAvatar(
                     backgroundColor: theme.colorScheme.primary,
                     radius: 22,
                     child: IconButton(
-                      onPressed: onBookmark,
-                      icon: Icon(Icons.bookmark_border, color: Colors.white),
+                      onPressed: () async {
+                        final notifier = ref.read(bookmarkProvider.notifier);
+                        if (isBookmarked) {
+                          await notifier.removeBookmark(model.id);
+                          ToastMsg.errorToast(message: 'Removed From Bookmark', context: context);
+                        } else {
+                          await notifier.addToBookmark(model);
+                          ToastMsg.successToast(message: 'Added To Bookmark', context: context);
+                        }
+                      },
+                      icon: Icon(
+                        isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -198,19 +219,7 @@ class NewsDetailPage extends StatelessWidget {
                     backgroundColor: theme.colorScheme.primary,
                     child: IconButton(
                       onPressed: onShare,
-                      icon: Icon(Icons.share_outlined, color: Colors.white),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 330.h,
-                  right: 80.w,
-                  child: CircleAvatar(
-                    radius: 22,
-                    backgroundColor: theme.colorScheme.primary,
-                    child: IconButton(
-                      onPressed: onReadLater,
-                      icon: Icon(Icons.watch_later_outlined, color: Colors.white),
+                      icon: const Icon(Icons.share_outlined, color: Colors.white),
                     ),
                   ),
                 ),

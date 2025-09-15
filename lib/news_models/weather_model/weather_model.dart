@@ -1,10 +1,13 @@
 
 
+import 'package:intl/intl.dart';
+
 class WeatherModel {
   final String name;
   final String country;
   final double tempC;
   final String condition;
+  final String lastUpdatedAt;
   final String icon;
   final Forecast? forecast;
 
@@ -13,16 +16,27 @@ class WeatherModel {
     required this.country,
     required this.tempC,
     required this.condition,
+    required this.lastUpdatedAt,
     required this.icon,
     this.forecast
   });
 
   factory WeatherModel.fromJson(Map<String, dynamic> json) {
+
+    final epoch = json['current']['last_updated_epoch'] as int;
+
+    final dateUTC = DateTime.fromMillisecondsSinceEpoch(epoch*1000, isUtc: true);
+
+    final asianTime = dateUTC.add(Duration(hours: 6));
+
+    final formatted = DateFormat('dd/MM/yyyy, hh:mm a').format(asianTime);
+
     return WeatherModel(
       name: json['location']['name'] as String,
       country: json['location']['country'] as String,
       tempC: (json['current']['temp_c'] as num).toDouble(),
       condition: json['current']['condition']['text'] as String,
+      lastUpdatedAt: formatted,
       icon: "https:${json['current']['condition']['icon']}",
       forecast: json['forecast']!=null? Forecast.fromJson(json['forecast']) : null,
     );
@@ -36,7 +50,9 @@ class Forecast {
 
   factory Forecast.fromJson(Map<String, dynamic> json) {
     return Forecast(
-      forecastDay: (json['forecastday'] as List).map((i) => ForecastDay.fromJson(i)).toList(),
+      forecastDay: (json['forecastday'] as List).asMap().entries
+          .where((i)=>i.key!=0)
+          .map((i) => ForecastDay.fromJson(i.value)).toList(),
     );
   }
 }

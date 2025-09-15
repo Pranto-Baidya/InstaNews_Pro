@@ -9,7 +9,7 @@ class WeatherApiService{
 
   static final apiKey = dotenv.env['Weather_APIKEY'];
 
-  static final String baseUrl = 'https://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=auto:ip&aqi=no&days=3';
+  static final String baseUrl = 'https://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=chittagong&aqi=no&days=4';
 
   static Future<WeatherModel> fetchWeather()async{
 

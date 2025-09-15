@@ -24,33 +24,23 @@ class ArticleModel {
   });
 
   factory ArticleModel.fromJson(Map<String, dynamic> json) {
-    const String placeholderImage =
-        "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png";
+    const String placeholderImage = "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png";
 
     String? rawImage = json['image_url'];
-    String safeImageUrl =
-    (rawImage != null && rawImage.isNotEmpty) ? rawImage : placeholderImage;
+    String safeImageUrl = (rawImage != null && rawImage.isNotEmpty) ? rawImage : placeholderImage;
 
     String? rawNewsUrl = json['link'];
-    String safeNewsUrl = (rawNewsUrl != null && rawNewsUrl.isNotEmpty)
-        ? rawNewsUrl
-        : "https://example.com";
+    String safeNewsUrl = (rawNewsUrl != null && rawNewsUrl.isNotEmpty) ? rawNewsUrl : "https://example.com";
 
     String? rawSourceIcon = json['source_icon'];
-    String safeSourceIcon =
-    (rawSourceIcon != null && rawSourceIcon.isNotEmpty)
-        ? rawSourceIcon
-        : "https://via.placeholder.com/24";
+    String safeSourceIcon = (rawSourceIcon != null && rawSourceIcon.isNotEmpty) ? rawSourceIcon : "https://via.placeholder.com/24";
 
     return ArticleModel(
       id: json['article_id'] ?? '',
       title: json['title'] ?? 'No title available',
       description: json['description'] ?? 'No description available',
-      categories: json['category'] != null
-          ? List<String>.from(json['category'])
-          : [],
-      country:
-      json['country'] != null ? List<String>.from(json['country']) : [],
+      categories: json['category'] != null ? List<String>.from(json['category']) : [],
+      country: json['country'] != null ? List<String>.from(json['country']) : [],
       imageUrl: safeImageUrl,
       newsUrl: safeNewsUrl,
       sourceName: json['source_name'] ?? 'Unknown source',

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:instanews_pro/riverpod/onboarding_pref_riverpod/onboarding_pref_riverpod.dart';
 import 'package:instanews_pro/riverpod/theme_riverpod/theme_riverpod.dart';
 import 'package:instanews_pro/screens/all_news/all_news.dart';
 import 'package:instanews_pro/utils/app_colors.dart';
@@ -27,7 +28,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      ref.read(onboardingProvider.notifier).loadPref();
+    });
     pageController = PageController();
+
   }
 
   @override
@@ -44,6 +49,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     bool lastPage = ref.watch(isLastPageProvider);
     int currentIndex = ref.watch(currentIndexProvider);
+
+    final onBoardingNotifier = ref.read(onboardingProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -71,7 +78,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ],
       ),
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20.w),
+        padding: EdgeInsets.symmetric(horizontal: 20.w,vertical: 0),
         child: Column(
           children: [
             Expanded(
@@ -92,7 +99,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   BuildPage(
                       theme: theme,
                       title: 'Your Feed, Your Way',
-                      subTitle: 'Read news from various categories.',
+                      subTitle: 'Read news according to your choice',
                       image: 'assets/news_second.png'
                   ),
                   BuildPage(
@@ -164,6 +171,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               AppButton(
                 onPressed: () {
                   if (lastPage) {
+                    onBoardingNotifier.showOnboardingOneTime(true);
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(builder: (context) => AllNews()),

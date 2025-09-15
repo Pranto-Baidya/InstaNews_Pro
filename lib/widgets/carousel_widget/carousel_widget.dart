@@ -6,7 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:instanews_pro/news_models/article_model/article_model.dart';
 import 'package:intl/intl.dart';
 import '../../screens/home/home.dart';
-import 'package:timeago/timeago.dart' as timeago;
+
 
 class CarouselWidget extends StatelessWidget {
   final ThemeData theme;
@@ -103,7 +103,7 @@ class CarouselWidget extends StatelessWidget {
                             const Spacer(),
                             Row(
                               children: [
-                                Text(article.sourceName,style: theme.textTheme.titleSmall?.copyWith(color: Colors.white),),
+                                Text(article.sourceName,style: theme.textTheme.titleSmall?.copyWith(color: Colors.white),maxLines: 1,overflow: TextOverflow.ellipsis,),
                                 SizedBox(width: 5.w,),
                                 Icon(Icons.verified,color: theme.colorScheme.primary,size: 15,),
                               ],

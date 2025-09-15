@@ -15,7 +15,7 @@ class SpeechState{
     this.recognizedWords = ''
   });
 
-  SpeechState copyWith({bool? isListening,String? recognizedWords}){
+  SpeechState copyWith({bool? isListening, String? recognizedWords}){
     return SpeechState(
         isListening: isListening ?? this.isListening,
         recognizedWords: recognizedWords ?? this.recognizedWords
@@ -59,9 +59,6 @@ class SpeechNotifier extends StateNotifier<SpeechState>{
         },
         listenFor: const Duration(seconds: 30),
         pauseFor: const Duration(seconds: 5),
-        listenOptions: SpeechListenOptions(
-          cancelOnError: true
-        )
       );
     }
     else{
@@ -72,5 +69,9 @@ class SpeechNotifier extends StateNotifier<SpeechState>{
   void stopListening(){
     _speechToText.stop();
     state = state.copyWith(isListening: false);
+  }
+
+  void clearRecognizedText(){
+    state = state.copyWith(recognizedWords: '');
   }
 }

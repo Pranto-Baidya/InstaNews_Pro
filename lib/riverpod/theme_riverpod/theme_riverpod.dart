@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 final themeNotifierProvider = StateNotifierProvider<ThemeNotifier,ThemeMode>((ref)=>ThemeNotifier());
 
 class ThemeNotifier extends StateNotifier<ThemeMode>{
+
   ThemeNotifier() : super(ThemeMode.system){
     loadTheme();
   }
@@ -23,7 +24,7 @@ class ThemeNotifier extends StateNotifier<ThemeMode>{
   }
 
   Future<void> toggleTheme(bool isDark)async{
-    SharedPreferences preferences = await SharedPreferences.getInstance();
+     SharedPreferences preferences = await SharedPreferences.getInstance();
      await preferences.setBool('themeMode', isDark);
      state = isDark? ThemeMode.dark : ThemeMode.light;
   }

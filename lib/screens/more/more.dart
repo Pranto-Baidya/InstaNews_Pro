@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:instanews_pro/notification_service/notification_service.dart';
+import 'package:instanews_pro/riverpod/notifications_riverpod/notification_prefs_riverpod.dart';
 import 'package:instanews_pro/riverpod/theme_riverpod/theme_riverpod.dart';
 import 'package:instanews_pro/utils/app_colors.dart';
 import 'package:instanews_pro/widgets/toast_msg/toast_msg.dart';
@@ -26,6 +28,10 @@ class More extends ConsumerWidget {
 
     final showWeather = ref.watch(showWeatherProvider);
 
+    final notificationState = ref.watch(immediateNotificationProvider);
+
+    final notificationNotifier = ref.read(immediateNotificationProvider.notifier);
+
     void restartAppDialogue(BuildContext context){
       final theme = Theme.of(context);
       showDialog(
@@ -34,13 +40,13 @@ class More extends ConsumerWidget {
             return AlertDialog(
               backgroundColor: theme.cardColor,
               title: Text('Please Wait!',style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.primary),),
-              content: Text('Please Restart The App To See The New Contents Based On The Filter',style: theme.textTheme.titleMedium,),
+              content: Text('Please restart the app and refresh for once to see the new contents based on the changes made',style: theme.textTheme.titleMedium,),
               actions: [
                 TextButton(
                     onPressed: (){
                       Navigator.pop(context);
                     },
-                    child: Text('Ok',style: theme.textTheme.titleMedium,)
+                    child: Text('Okay',style: theme.textTheme.titleMedium,)
                 )
               ],
 
@@ -122,7 +128,7 @@ class More extends ConsumerWidget {
               TextButton(
                 onPressed: () {
                   ref.read(newsNotifierProvider.notifier).saveCountries(tempSelection);
-                  ref.read(newsNotifierProvider.notifier).fetchNewsByCountryAndLanguage();
+
                   Navigator.pop(context);
                   restartAppDialogue(context);
                 },
@@ -201,7 +207,7 @@ class More extends ConsumerWidget {
               TextButton(
                 onPressed: () {
                   ref.read(newsNotifierProvider.notifier).saveLanguages(tempSelection);
-                  ref.read(newsNotifierProvider.notifier).fetchNewsByCountryAndLanguage();
+
                   Navigator.pop(context);
                   restartAppDialogue(context);
                 },
@@ -231,7 +237,7 @@ class More extends ConsumerWidget {
         ),
       ),
       body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         padding: EdgeInsets.symmetric(horizontal: 20.w),
         child: Column(
           children: [
@@ -277,12 +283,19 @@ class More extends ConsumerWidget {
                   ),
                 ),
                 ListTile(
-                  title: const Text("Notifications"),
-                  leading: Icon(Icons.notifications_none,color: theme.iconTheme.color,),
+                  title: const Text("Allow Remainders"),
+                  leading: Icon(Icons.watch_later_outlined,color: theme.iconTheme.color,),
                   trailing: Switch(
-                    value: true,
+                    value: notificationState,
                     onChanged: (value) {
-
+                      if(value==true){
+                        notificationNotifier.saveChoice(value);
+                        NotificationService.instantNotification();
+                      }
+                      else{
+                        NotificationService.cancelAllNotifications();
+                        notificationNotifier.saveChoice(value);
+                      }
                     },
                   ),
                 ),

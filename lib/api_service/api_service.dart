@@ -11,6 +11,7 @@ class ApiService {
 
     String url = baseUrl;
 
+
     if (languages.isNotEmpty) {
       url = "$url&language=${languages.join(',')}";
     }
@@ -42,9 +43,10 @@ class ApiService {
           'articles': articles,
           'nextPage': json['nextPage'],
         };
-      } else {
-        print('API Error: ${response.statusCode} - ${response.body}');
-        throw Exception('Failed to fetch data: ${response.statusCode}');
+      }
+      else {
+        print('API Error: ${response.body}');
+        throw Exception('Failed to fetch data');
       }
     } catch (e) {
       print('Error fetching news: $e');

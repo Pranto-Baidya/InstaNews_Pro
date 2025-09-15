@@ -4,12 +4,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:instanews_pro/news_models/db_bookmark_model/bookmark_model.dart';
+import 'package:instanews_pro/notification_service/notification_service.dart';
+import 'package:instanews_pro/riverpod/db_riverpod/db_riverpod.dart';
 import 'package:instanews_pro/riverpod/theme_riverpod/theme_riverpod.dart';
-import 'package:instanews_pro/utils/app_colors.dart';
 import 'package:instanews_pro/widgets/animated_container_widget/animatedContainerWidget.dart';
+import 'package:instanews_pro/widgets/news_details_screen/news_details.dart';
+import 'package:instanews_pro/widgets/news_webview/news_webview.dart';
+import 'package:instanews_pro/widgets/toast_msg/toast_msg.dart';
+import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
+
+final dateProvider = StateProvider<DateTime>((ref)=>DateTime.now());
+final isSelected = StateProvider<bool>((ref)=>false);
+
+final reminderDate = StateProvider<DateTime>((ref)=>DateTime.now());
+final reminderTime = StateProvider<TimeOfDay>((ref)=>TimeOfDay.now());
+
+final isReminderDateSet = StateProvider<bool>((ref)=>false);
+final isReminderTimeSet = StateProvider<bool>((ref)=>false);
+
 
 class Bookmarks extends ConsumerStatefulWidget {
-  const Bookmarks({super.key});
+  final BookmarkModel? bookmarkModel;
+  const Bookmarks({this.bookmarkModel,super.key});
 
   @override
   _BookmarksState createState() => _BookmarksState();
@@ -20,9 +38,143 @@ class _BookmarksState extends ConsumerState<Bookmarks> {
   final TextEditingController _searchController = TextEditingController();
 
   @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      ref.read(bookmarkProvider.notifier).getAllBookMarks();
+    });
+    super.initState();
+  }
+
+
+  void toggleBookmark(BookmarkModel model) async {
+    final bookmark = ref.read(bookmarkProvider.notifier);
+    final isMarked = await bookmark.hasBookmark(model.id);
+
+    if (isMarked) {
+      await bookmark.removeBookmark(model.id);
+    } else {
+      await bookmark.addToBookmark(model);
+    }
+  }
+
+  void readLater(BookmarkModel bookmark)async{
+
+    final theme = Theme.of(context);
+    final selectedDate = ref.watch(reminderDate);
+    final selectedTime = ref.watch(reminderTime);
+
+    showDialog(
+        context: context,
+        builder: (BuildContext context){
+          return Consumer(
+              builder: (context,ref, _){
+                final isSelectedDate = ref.watch(isReminderDateSet);
+                final isSelectedTime = ref.watch(isReminderTimeSet);
+
+                return AlertDialog(
+                  title: Text('When Should We Remind You?',style: theme.textTheme.titleLarge?.copyWith(color: theme.colorScheme.primary),),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.date_range,color: theme.iconTheme.color,),
+                          SizedBox(width: 5.w,),
+                          TextButton(
+                              onPressed: ()async{
+                                DateTime? date = await showDatePicker(
+                                    context: context,
+                                    firstDate: DateTime.now(),
+                                    initialDate: isSelectedDate? selectedDate : DateTime.now(),
+                                    lastDate: DateTime(2100)
+                                );
+                                if(date!=null && date!=selectedDate){
+                                  ref.read(reminderDate.notifier).state = date;
+                                  ref.read(isReminderDateSet.notifier).state = true;
+                                }
+                              },
+                              child: isSelectedDate? Text('Tap to change the date',style: theme.textTheme.titleMedium,) :Text('Tap to select a date',style: theme.textTheme.titleMedium,)
+                          )
+                        ],
+                      ),
+                      isSelectedDate?SizedBox(height: 10.h,):SizedBox.shrink(),
+                      isSelectedDate? Row(
+                        children: [
+                          Text('Selected date is : ',style: theme.textTheme.titleMedium,),
+                          SizedBox(width: 5.w,),
+                          Text('${DateFormat('dd/MM/yyyy').format(selectedDate)}',style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.primary))
+                        ],
+                      ) : SizedBox.shrink(),
+                      SizedBox(height: 10.h,),
+                      Row(
+                        children: [
+                          Icon(Icons.watch_later_outlined,color: theme.iconTheme.color,),
+                          SizedBox(width: 5.w,),
+                          TextButton(
+                              onPressed: ()async{
+                                TimeOfDay? time = await showTimePicker(
+                                    context: context,
+                                    initialTime: isSelectedTime? selectedTime : TimeOfDay.now()
+                                );
+                                if(time!=null && time!=selectedTime){
+                                  ref.read(reminderTime.notifier).state = time;
+                                  ref.read(isReminderTimeSet.notifier).state = true;
+                                }
+                              },
+                              child: isSelectedTime? Text('Tap to change the time',style: theme.textTheme.titleMedium,) :Text('Tap to select a time',style: theme.textTheme.titleMedium,)
+                          )
+                        ],
+                      ),
+                      isSelectedDate?SizedBox(height: 10.h,):SizedBox.shrink(),
+                      isSelectedDate? Row(
+                        children: [
+                          Text('Selected time is : ',style: theme.textTheme.titleMedium,),
+                          SizedBox(width: 5.w,),
+                          Text('${selectedTime.format(context)}',style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.primary))
+                        ],
+                      ) : SizedBox.shrink(),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                        onPressed: (){
+                          Navigator.pop(context);
+                        },
+                        child: Text('Cancel',style: theme.textTheme.titleMedium,)
+                    ),
+                    TextButton(
+                        onPressed: (){
+                          NotificationService.showNotificationAt(
+                              id: bookmark.id.hashCode.abs(),
+                              title: 'InstaNews Pro News Reminder',
+                              description: 'You set up a reminder for \n${bookmark.title}',
+                              date: ref.read(reminderDate),
+                              time: ref.read(reminderTime)
+                          );
+                          Navigator.pop(context);
+                          ToastMsg.successToast(message: 'Reminder Set Up Successfully', context: context);
+                        },
+                        child: Text('Set Reminder',style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.primary),)
+                    ),
+                  ],
+                );
+              }
+          );
+        }
+    );
+  }
+
+
+  @override
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
     final isDark = ref.watch(themeNotifierProvider) == ThemeMode.dark;
+    final bookmarkState = ref.watch(bookmarkProvider);
+
+    final displayResult = _searchController.text.isNotEmpty? bookmarkState.searchBookmarks
+        : bookmarkState.selectedDateTime!=null? bookmarkState.filteredResult
+        : bookmarkState.bookmarks;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -44,26 +196,90 @@ class _BookmarksState extends ConsumerState<Bookmarks> {
       body: Column(
         children: [
           SizedBox(height: 10.h,),
-          _buildSearchBar(theme),
+          _buildSearchBar(theme,ref),
           SizedBox(height: 20.h,),
+
+          if(bookmarkState.selectedDateTime!=null)
+            ...[
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Row(
+                  children: [
+                    Text('Showing Filtered Results',style: theme.textTheme.titleLarge,),
+                    Spacer(),
+                    IconButton(
+                        onPressed: (){
+                          ref.read(bookmarkProvider.notifier).clearFilter();
+                        },
+                        icon: Icon(Icons.change_circle,color: theme.iconTheme.color,size: 30,)
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(height: 10.h,),
+            ],
+
           Expanded(
              child: ListView.builder(
-                 physics: BouncingScrollPhysics(),
-                 itemCount: 10,
+                 physics: ClampingScrollPhysics(),
+                 shrinkWrap: true,
+                 itemCount: displayResult.length,
                  itemBuilder: (context,index){
+                   final data = displayResult[index];
+                   final bookmarkModel = BookmarkModel(
+                       id: data.id,
+                       title: data.title,
+                       description: data.description,
+                       imageUrl: data.imageUrl,
+                       categories: data.categories,
+                       countries: data.countries,
+                       newsUrl: data.newsUrl,
+                       newsSource: data.newsSource,
+                       sourceIcon: data.sourceIcon,
+                       dateTime: data.dateTime
+                   );
                    return AnimatedContainerWidget(
                      index: index,
                      offset: Offset(0, 0.5),
                      child: BookmarkWidget(
                          theme: theme,
-                         imageUrl: 'https://d3i6fh83elv35t.cloudfront.net/static/2025/09/HighStakes-1024x683.jpg',
-                         title: 'Somebody but nobody gets the title of fancy awards 2025 in LA ',
-                         chipTitle: 'Celebrity',
-                         onPressed: () {
-
+                         imageUrl: data.imageUrl,
+                         title: data.title,
+                         chipTitle: data.categories.take(1).map((i)=>i.toUpperCase()).join(''),
+                         onBookmark: (){
+                           toggleBookmark(data);
+                           ToastMsg.errorToast(message: 'Removed From Bookmark', context: context);
                          },
-                         onBookmark: () {
+                         onReadLater: (){
+                           readLater(bookmarkModel);
+                         },
+                         isMarked: true,
+                         onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context)=>
+                              NewsDetailPage(
+                                  tag: data.id,
+                                  imageUrl: data.imageUrl,
+                                  category: data.categories.take(1).map((i)=>i.toUpperCase()).join(''),
+                                  title: data.title,
+                                  source: data.newsSource,
+                                  content: data.description,
+                                  sourceIcon: data.sourceIcon,
+                                  dateTime: data.dateTime!,
+                                  model: bookmarkModel,
+                                  onShare: (){
+                                    SharePlus.instance.share(
+                                      ShareParams(
+                                        uri: Uri.parse(data.newsUrl)
+                                      )
+                                    );
+                                  },
+                                  onReadLater: (){
 
+                                  },
+                                  onReadMore: (){
+                                    Navigator.push(context, MaterialPageRoute(builder: (context)=>NewsWebview(newsUrl: data.newsUrl)));
+                                  }
+                              )));
                          },
                      ),
                    );
@@ -74,7 +290,8 @@ class _BookmarksState extends ConsumerState<Bookmarks> {
       ),
     );
   }
-  Widget _buildSearchBar(ThemeData theme) {
+  Widget _buildSearchBar(ThemeData theme, WidgetRef ref) {
+    final notifier = ref.read(bookmarkProvider.notifier);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal:20.w ),
       child: Container(
@@ -113,13 +330,98 @@ class _BookmarksState extends ConsumerState<Bookmarks> {
                 fontWeight: FontWeight.w400,
               ),
               suffixIcon: IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return Consumer(
+                        builder: (context, ref, _) {
+
+                          final selectedDate = ref.watch(dateProvider);
+                          final isDateSelected = ref.watch(isSelected);
+
+                          return AlertDialog(
+                            title: Text(
+                              'Filter By Date',
+                              style: theme.textTheme.titleLarge
+                                  ?.copyWith(color: theme.colorScheme.primary),
+                            ),
+                            content: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.date_range, color: theme.iconTheme.color),
+                                    SizedBox(width: 5.w),
+                                    TextButton(
+                                      onPressed: () async {
+                                        DateTime? date = await showDatePicker(
+                                          context: context,
+                                          firstDate: DateTime(2020),
+                                          lastDate: DateTime.now(),
+                                          initialDate: isDateSelected? selectedDate : DateTime.now(),
+                                        );
+                                        if (date != null && date != selectedDate) {
+                                          ref.read(dateProvider.notifier).state = date;
+                                          ref.read(isSelected.notifier).state = true;
+                                        }
+                                      },
+                                      child: isDateSelected?Text(
+                                        'Tap to change',
+                                        style: theme.textTheme.titleMedium,
+                                      ):Text(
+                                        'Tap to select date',
+                                        style: theme.textTheme.titleMedium,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 10.h),
+                                isDateSelected
+                                    ? Row(
+                                      children: [
+                                        Text('Selected date is :  ',style: theme.textTheme.titleMedium,),
+                                        Text(
+                                          '${DateFormat('dd/MM/yyyy').format(selectedDate)}',
+                                          style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.primary),
+                                        ),
+                                      ],
+                                    )
+                                    : SizedBox.shrink(),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: Text('Cancel', style: theme.textTheme.titleMedium),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  ref.read(bookmarkProvider.notifier).filterByDate(ref.read(dateProvider));
+                                  Navigator.pop(context);
+                                },
+                                child: Text('Filter', style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.primary)),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  );
+
+                },
                 icon: Icon(
                   Icons.tune,
                   color: theme.iconTheme.color,
                 ),
               ),
             ),
+            onChanged: (value){
+              notifier.searchBookmarks(value);
+            },
           ),
         ),
       ),
@@ -134,6 +436,7 @@ class BookmarkWidget extends StatelessWidget {
   final String chipTitle;
   final VoidCallback onPressed;
   final VoidCallback onBookmark;
+  final VoidCallback onReadLater;
   final bool? isMarked;
 
   const BookmarkWidget({
@@ -144,6 +447,7 @@ class BookmarkWidget extends StatelessWidget {
     required this.chipTitle,
     required this.onPressed,
     required this.onBookmark,
+    required this.onReadLater,
     this.isMarked,
   });
 
@@ -201,18 +505,6 @@ class BookmarkWidget extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Positioned(
-                        top: 12,
-                        right: 15,
-                        child: GestureDetector(
-                          onTap: onBookmark,
-                          child: CircleAvatar(
-                            radius: 22,
-                            backgroundColor: Colors.white,
-                            child: Icon(Icons.bookmark_border,color: AppColors.lightTextPrimary,),
-                          ),
-                        )
-                    )
                   ],
                 ),
               SizedBox(height: 5.h,),
@@ -231,22 +523,46 @@ class BookmarkWidget extends StatelessWidget {
                      child: Text('Read more...',style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.primary),)
                  ),
              ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 15.w,),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Chip(
-                  padding: const EdgeInsets.all(10),
-                  side: BorderSide.none,
-                  backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-                  label: Text(
-                    chipTitle,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      color: theme.colorScheme.primary,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 15.w,),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Chip(
+                      padding: const EdgeInsets.all(10),
+                      side: BorderSide.none,
+                      backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                      label: Text(
+                        chipTitle,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
+                Spacer(),
+                GestureDetector(
+                        onTap: onReadLater,
+                        child: CircleAvatar(
+                          radius: 22,
+                          backgroundColor: theme.colorScheme.primary,
+                          child: Icon(Icons.watch_later_outlined,color: Colors.white),
+                        ),
+                      ),
+                      SizedBox(width: 15.w,),
+                      GestureDetector(
+                        onTap: onBookmark,
+                        child: CircleAvatar(
+                          radius: 22,
+                          backgroundColor: theme.colorScheme.primary,
+                          child: isMarked == true?Icon(Icons.bookmark,color: Colors.white,):Icon(Icons.bookmark_border,color: Colors.white),
+                        ),
+                      ),
+                      SizedBox(width: 25.w,),
+              ],
             ),
             SizedBox(height: 20.h,),
 

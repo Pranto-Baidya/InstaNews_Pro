@@ -83,7 +83,7 @@ ThemeData lightTheme = ThemeData(
     backgroundColor: AppColors.lightSurface,
     indicatorColor: AppColors.mainColor,
     surfaceTintColor: Colors.transparent,
-    elevation: 1
+
   ),
   searchBarTheme: SearchBarThemeData(
     backgroundColor: WidgetStatePropertyAll(AppColors.lightSurface),
