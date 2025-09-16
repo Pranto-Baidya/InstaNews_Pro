@@ -318,7 +318,7 @@ class More extends ConsumerWidget {
                   ),
                 ),
                 ListTile(
-                  title: const Text("Allow Remainders"),
+                  title: const Text("Allow Reminders"),
                   leading: Icon(Icons.watch_later_outlined,color: theme.iconTheme.color,),
                   trailing: Switch(
                     value: notificationState,

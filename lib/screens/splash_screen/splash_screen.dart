@@ -23,7 +23,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_){
-      Future.delayed(Duration(seconds: 3)).then((_){
+      Future.delayed(Duration(seconds: 2)).then((_){
         _checkPrefs();
       });
     });
@@ -69,12 +69,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AppTitle(
-              width: 50.w,
+              width: 48.w,
               theme: theme,
               textStyleFirst: theme.textTheme.displaySmall!,
               textStyleSecond: theme.textTheme.displaySmall!.copyWith(color: theme.colorScheme.primary),),
             SizedBox(height: 20.h,),
-            Text('News From Around The World For You',style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w400),)
+            Text('News from around the world for you',style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w400),)
           ],
         ),
       ),

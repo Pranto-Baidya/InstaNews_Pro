@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:instanews_pro/news_models/article_model/article_model.dart';
+import 'package:instanews_pro/widgets/app_loader/app_loader.dart';
 import 'package:intl/intl.dart';
 import '../../screens/home/home.dart';
 
@@ -69,6 +70,8 @@ class CarouselWidget extends StatelessWidget {
                       CachedNetworkImage(
                         imageUrl: article.imageUrl,
                         fit: BoxFit.cover,
+                        errorWidget: (context, url, error) => Center(child: Icon(Icons.broken_image,size: 50,color: Colors.red,)),
+                        placeholder: (context, url) => AppLoader.mainLoader(50)
                       ),
                       Container(
                         decoration: BoxDecoration(

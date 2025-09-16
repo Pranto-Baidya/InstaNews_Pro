@@ -1,9 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:instanews_pro/news_models/article_model/article_model.dart';
 import 'package:instanews_pro/widgets/animated_container_widget/animatedContainerWidget.dart';
+
+import '../app_loader/app_loader.dart';
 
 class ShortNewsTile extends StatelessWidget {
   final int index;
@@ -63,15 +64,20 @@ class ShortNewsTile extends StatelessWidget {
                   children: [
                     Padding(
                       padding:  EdgeInsets.only(top: 5.h),
-                      child: Hero(
-                        tag: articleModel?.id ?? 'default-hero-tag',
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10.r),
-                          child: CachedNetworkImage(
-                            imageUrl: imageUrl!=null? imageUrl! : 'https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png',
-                            height: 130.h,
-                            width: 130.w,
-                            fit: BoxFit.cover,
+                      child: GestureDetector(
+                        onTap: onPressed,
+                        child: Hero(
+                          tag: articleModel?.id ?? 'default-hero-tag',
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10.r),
+                            child: CachedNetworkImage(
+                              imageUrl: imageUrl!=null? imageUrl! : 'https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png',
+                              height: 130.h,
+                              width: 130.w,
+                              fit: BoxFit.cover,
+                                errorWidget: (context, url, error) => Center(child: Icon(Icons.broken_image,size: 50,color: Colors.red,)),
+                                placeholder: (context, url) => AppLoader.mainLoader(50)
+                            ),
                           ),
                         ),
                       ),

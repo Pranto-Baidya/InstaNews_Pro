@@ -228,7 +228,7 @@ class _BookmarksState extends ConsumerState<Bookmarks> {
                        children: [
                          Center(child: Image.asset('assets/empty.png',fit: BoxFit.cover,width: 250.w,height: 250.h,)),
                          SizedBox(height: 15.h,),
-                         Center(child: Text('Oops! No bookmarks found',style: theme.textTheme.titleMedium,)),
+                         Center(child: Text('Oops! No bookmarks are added yet',style: theme.textTheme.titleMedium,)),
                        ],
                      );
                    }

@@ -6,6 +6,8 @@ import 'package:instanews_pro/news_models/db_bookmark_model/bookmark_model.dart'
 import 'package:instanews_pro/riverpod/db_riverpod/db_riverpod.dart';
 import 'package:instanews_pro/widgets/toast_msg/toast_msg.dart';
 
+import '../app_loader/app_loader.dart';
+
 class NewsDetailPage extends ConsumerWidget {
   final String tag;
   final String imageUrl;
@@ -59,6 +61,8 @@ class NewsDetailPage extends ConsumerWidget {
                         child: CachedNetworkImage(
                           imageUrl: imageUrl,
                           fit: BoxFit.cover,
+                            errorWidget: (context, url, error) => Center(child: Icon(Icons.broken_image,size: 50,color: Colors.red,)),
+                            placeholder: (context, url) => AppLoader.mainLoader(50)
                         ),
                       ),
                     ),

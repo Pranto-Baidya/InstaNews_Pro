@@ -10,7 +10,11 @@ import 'package:instanews_pro/screens/home/home.dart';
 import 'package:instanews_pro/screens/more/more.dart';
 import 'package:instanews_pro/utils/app_colors.dart';
 
+import '../../widgets/toast_msg/toast_msg.dart';
+
 final countProvider = StateProvider<int>((ref)=>0);
+
+final tipProvider = StateProvider<bool>((ref)=>false);
 
 class AllNews extends ConsumerStatefulWidget {
   const AllNews({super.key});
@@ -52,6 +56,19 @@ class _AllNewsState extends ConsumerState<AllNews> {
             selectedIndex: count,
             onDestinationSelected: (value){
               ref.read(countProvider.notifier).state = value;
+              final tipShown = ref.read(tipProvider);
+              if(value==1) {
+                if (!tipShown) {
+                  ref.read(tipProvider.notifier).state = true;
+
+                  ToastMsg.showTip(
+                      message: 'Swipe left to see more categories',
+                      context: context,
+                      alignment: Alignment.topCenter
+                  );
+
+                }
+              }
             },
             destinations: [
               NavigationDestination(

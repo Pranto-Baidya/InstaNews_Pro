@@ -12,6 +12,7 @@ import 'package:instanews_pro/widgets/news_details_screen/news_details.dart';
 import 'package:instanews_pro/widgets/news_webview/news_webview.dart';
 import 'package:instanews_pro/widgets/shimmer_effects/shimmer_listview.dart';
 import 'package:instanews_pro/widgets/short_news_tile/short_news_tile.dart';
+import 'package:instanews_pro/widgets/toast_msg/toast_msg.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../widgets/app_loader/app_loader.dart';
@@ -128,9 +129,6 @@ class _ExploreNewsState extends ConsumerState<ExploreNews> {
                                  return ShimmerListview();
                                }
                            );
-                         }
-                         else if(newsState.error!=null){
-                           return Center(child: Text("Exception : Failed to fetch data",style: TextStyle(color: Colors.red,fontSize: 18),),);
                          }
                          else if(newsState.articles.isEmpty){
                            return Column(

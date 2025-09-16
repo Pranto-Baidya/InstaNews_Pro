@@ -279,23 +279,20 @@ class WeatherLite extends StatelessWidget {
                       width: 60.w,
                       height: 60.h,
                     ),
-                    Flex(
-                      direction: Axis.vertical,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                       Padding(
-                         padding: const EdgeInsets.only(right: 10),
-                         child: Flexible(
-                            child: Text(
-                              data.condition,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                          ),
-                       ),
-                      ],
-                    ),
+                    Wrap(
+                       children: [
+                         Padding(
+                           padding: const EdgeInsets.only(right: 10),
+                           child: Text(
+                             data.condition,
+                             style: theme.textTheme.titleMedium?.copyWith(
+                               color: theme.colorScheme.primary,
+                             ),
+                           ),
+                         ),
+                       ],
+                     ),
+
                   ],
                 ),
                 SizedBox(height: 20.h),

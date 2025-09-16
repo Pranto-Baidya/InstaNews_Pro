@@ -44,8 +44,8 @@ class NotificationService{
   static Future<void> instantNotification()async{
     await localNotifications.show(
         0,
-        'InstaNews Reminder',
-        'You can now set up news remainders',
+        'InstaNews reminder',
+        'You can now set up news reminders',
         notificationDetails,
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:toastification/toastification.dart';
 
 class ToastMsg {
@@ -28,6 +29,23 @@ class ToastMsg {
       alignment: alignment ?? Alignment.topRight,
         autoCloseDuration: Duration(seconds: 4),
         backgroundColor: Colors.red.shade50,
+        borderSide: BorderSide.none,
+        dragToClose: true,
+        closeButton: ToastCloseButton(
+            showType: CloseButtonShowType.none
+        )
+    );
+  }
+
+  static void showTip({Alignment? alignment,required String message, required BuildContext context}) {
+    toastification.show(
+        style: ToastificationStyle.flat,
+        title: Text(message, style: TextStyle(color: Colors.white)),
+        icon: Icon(Icons.lightbulb, color: Colors.white),
+        primaryColor: Color(0xFF2563EB),
+        alignment: alignment ?? Alignment.topRight,
+        autoCloseDuration: Duration(seconds: 5),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         borderSide: BorderSide.none,
         dragToClose: true,
         closeButton: ToastCloseButton(

@@ -440,7 +440,7 @@ class _HomeState extends ConsumerState<Home> {
               context,
               MaterialPageRoute(
                 builder: (_) => NewsDetailPage(
-                  tag: articles.id,
+                  tag: 'recent_${articles.id}',
                   imageUrl: articles.imageUrl,
                   category: articles.categories
                       .take(1)
@@ -522,7 +522,7 @@ class _HomeState extends ConsumerState<Home> {
                   onReadMore: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context)=>NewsWebview(newsUrl: article.newsUrl)));
                   },
-                  tag: article.id,
+                  tag: 'world_${article.id}',
                   model: bookmarkModel,
                 ),
               ),

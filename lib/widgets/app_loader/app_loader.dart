@@ -6,8 +6,8 @@ import 'package:instanews_pro/utils/app_colors.dart';
 
 class AppLoader{
   static Widget mainLoader(double? size){
-    return SpinKitCubeGrid(
-      size: size ?? 50,
+    return SpinKitFoldingCube(
+      size: size ?? 45,
       color: AppColors.mainColor,
     );
   }
