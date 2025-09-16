@@ -97,7 +97,7 @@ cd InstaNews_Pro
 ## Step 2 (Install dependencies)
 flutter pub get
 
-## Step 3 (Add your NewsData.io API Key in lib/core/constants.dart)
+## Step 3 (Add your NewsData.io API Key)
 const String apiKey = "YOUR_API_KEY";
 
 ## Step 4 (Run the app)
