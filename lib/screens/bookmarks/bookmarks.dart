@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:instanews_pro/news_models/db_bookmark_model/bookmark_model.dart';
 import 'package:instanews_pro/notification_service/notification_service.dart';
 import 'package:instanews_pro/riverpod/db_riverpod/db_riverpod.dart';
+import 'package:instanews_pro/riverpod/notifications_riverpod/notification_prefs_riverpod.dart';
 import 'package:instanews_pro/riverpod/theme_riverpod/theme_riverpod.dart';
 import 'package:instanews_pro/widgets/animated_container_widget/animatedContainerWidget.dart';
 import 'package:instanews_pro/widgets/news_details_screen/news_details.dart';
@@ -443,7 +444,7 @@ class _BookmarksState extends ConsumerState<Bookmarks> {
   }
 }
 
-class BookmarkWidget extends StatelessWidget {
+class BookmarkWidget extends ConsumerWidget {
   final ThemeData theme;
   final String imageUrl;
   final String title;
@@ -466,7 +467,10 @@ class BookmarkWidget extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,WidgetRef ref) {
+
+    final isReminderEnabled = ref.watch(immediateNotificationProvider);
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal:20.w ,vertical: 12.h),
       child: Container(
@@ -558,14 +562,18 @@ class BookmarkWidget extends StatelessWidget {
                   ),
                 ),
                 Spacer(),
-                GestureDetector(
-                        onTap: onReadLater,
-                        child: CircleAvatar(
-                          radius: 22,
-                          backgroundColor: theme.colorScheme.primary,
-                          child: Icon(Icons.watch_later_outlined,color: Colors.white),
+                     Visibility(
+                       visible: isReminderEnabled,
+                       replacement: SizedBox.shrink(),
+                       child: GestureDetector(
+                          onTap: onReadLater,
+                          child: CircleAvatar(
+                            radius: 22,
+                            backgroundColor: theme.colorScheme.primary,
+                            child: Icon(Icons.watch_later_outlined,color: Colors.white),
+                          ),
                         ),
-                      ),
+                     ),
                       SizedBox(width: 15.w,),
                       GestureDetector(
                         onTap: onBookmark,
