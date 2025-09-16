@@ -88,5 +88,21 @@ Designed with scalability and performance in mind, InstaNews Pro is more than ju
 # Project Structure
 <img width="540" height="328" alt="Screenshot 2025-09-16 211051" src="https://github.com/user-attachments/assets/bd86ac9e-781f-4817-8993-e4911d779730" />
 
+# Setup & Installation
+
+## Step 1 (Clone the repo)
+git clone https://github.com/Pranto-Baidya/InstaNews_Pro.git
+cd InstaNews_Pro
+
+## Step 2 (Install dependencies)
+flutter pub get
+
+## Step 3 (Add your NewsData.io API Key in lib/core/constants.dart)
+const String apiKey = "YOUR_API_KEY";
+
+## Step 4 (Run the app)
+flutter run
+
+
 
 
