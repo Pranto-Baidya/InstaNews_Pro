@@ -1,17 +1,14 @@
-# 📰 InstaNews Pro
+# InstaNews Pro
 InstaNews Pro is a modern Flutter news application crafted to deliver real-time headlines from around the world in a clean, responsive, and visually engaging UI.
 Designed with scalability and performance in mind, InstaNews Pro is more than just a news reader — it’s a project that demonstrates professional Flutter development practices, including:
-
 - Clean architecture with separation of concerns
 - Riverpod for predictable and testable state management
 - Optimized performance with lazy loading, caching, and smooth animations
 - A polished UI/UX that adapts beautifully to any mobile screens
 
-Whether you’re browsing top headlines, exploring categories, or reading detailed articles in dark mode, InstaNews Pro showcases how to build a real-world, production-quality Flutter app that balances functionality with design.
+# Full Project Features
 
-# 📌 Full Project Features
-
-## 🌟 Essential Features
+## Essential Features
 🎨 Clean and modern UI with fully responsive design
 
 📰 Real-time news fetched from NewsData.io API
@@ -36,11 +33,12 @@ Whether you’re browsing top headlines, exploring categories, or reading detail
 
 🖼️ Optimized images with caching
 
-⚠️ Graceful error handling for network issues, empty states, and loading states
-
 🌐 Real-time internet connectivity check
 
-## 🌟 Extra Features
+⚠️ Graceful error handling for network issues, empty states, and loading states
+
+
+## Extra Features
 📱 Contains splash screen
 
 🎉 Onboarding experience with delightful one-time screens
@@ -57,27 +55,16 @@ Whether you’re browsing top headlines, exploring categories, or reading detail
 
 🌙 Light & Dark theme toggle
 
-# </> Tech Stack
+# Tech Stack
 - Flutter 3.35.3 (Null safety enabled)
 - Dart 3.9.3
 - Riverpod — state management
 - HTTP — REST API integration
 - Cached Network Image — image optimization
 - Flutter ScreenUtil — responsive UI
-- Linting & Analysis Options — clean, maintainable code
+- And many more...
 
-
-
-
-
-
-
-
-
-
-
-
-# 📸 Project screenshots
+# Project screenshots
 <img src="https://github.com/user-attachments/assets/158a000b-9da3-4018-8095-04961f3750e1" width="300"/> <img src="https://github.com/user-attachments/assets/972f33fb-6a9f-4150-ad25-67a1f0f9ec0b" width="300"/>
 <img src="https://github.com/user-attachments/assets/caac6847-1016-40ee-9335-b94da0fd2e2b" width="300"/> <img src="https://github.com/user-attachments/assets/5cba6eb9-6d0e-4bcf-9325-f1f6d25887c0" width="300"/>
 <img src="https://github.com/user-attachments/assets/e3390d28-ecaf-4610-9e99-cf950a765014" width="300"/> <img src="https://github.com/user-attachments/assets/de39cc86-b554-4872-a810-fa473619bed8" width="300"/>
@@ -98,6 +85,8 @@ Whether you’re browsing top headlines, exploring categories, or reading detail
 <img src="https://github.com/user-attachments/assets/de2186ff-b741-4b0a-b957-da499f5bb84d" width="300"/> <img src="" width="300"/>
 <img src="" width="300"/> <img src="" width="300"/>
 
+# Project Structure
+<img width="540" height="328" alt="Screenshot 2025-09-16 211051" src="https://github.com/user-attachments/assets/bd86ac9e-781f-4817-8993-e4911d779730" />
 
 
 
