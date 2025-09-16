@@ -57,10 +57,9 @@ Whether you’re browsing top headlines, exploring categories, or reading detail
 
 🌙 Light & Dark theme toggle
 
-
 # </> Tech Stack
-- Flutter 3.x (Null safety enabled)
-- Dart
+- Flutter 3.35.3 (Null safety enabled)
+- Dart 3.9.3
 - Riverpod — state management
 - HTTP — REST API integration
 - Cached Network Image — image optimization
