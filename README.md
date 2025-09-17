@@ -82,8 +82,7 @@ Designed with scalability and performance in mind, InstaNews Pro is more than ju
 <img src="https://github.com/user-attachments/assets/8f331d40-14ef-4025-898d-9698ab775aac" width="300"/> <img src="https://github.com/user-attachments/assets/528f06ad-ec08-43b6-a03b-ec3040eb821a" width="300"/>
 <img src="https://github.com/user-attachments/assets/1c533fef-07a7-4400-8bed-a91db84e4271" width="300"/> <img src="https://github.com/user-attachments/assets/167528fe-a6e8-4517-8e6b-b8927e9ef7fa" width="300"/>
 <img src="https://github.com/user-attachments/assets/dfbb456c-d774-4537-af1f-b37b0430794f" width="300"/> <img src="https://github.com/user-attachments/assets/c46123f1-b9a5-485a-a5ca-56b331f68977" width="300"/>
-<img src="https://github.com/user-attachments/assets/de2186ff-b741-4b0a-b957-da499f5bb84d" width="300"/> <img src="" width="300"/>
-<img src="" width="300"/> <img src="" width="300"/>
+<img src="https://github.com/user-attachments/assets/de2186ff-b741-4b0a-b957-da499f5bb84d" width="300"/>
 
 # Project Structure
 <img width="540" height="328" alt="Screenshot 2025-09-16 211051" src="https://github.com/user-attachments/assets/bd86ac9e-781f-4817-8993-e4911d779730" />
